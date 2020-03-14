@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using SharedKernel;
 
@@ -33,12 +34,7 @@ namespace Service.Mapping
             return ToTest(storageTest);
         }
 
-        public async Task BuildTestTree(Test test)
-        {
-            await BuildTestTree(test, null);
-        }
-
-        private async Task BuildTestTree(Test test, Test parent)
+        public async Task BuildTestTreeAsync(Test test)
         {
             var children = await _storage.TestStorage.GetChildren(Guid.Parse(test.Id));
             if (!children.Any()) return;
@@ -48,14 +44,30 @@ namespace Service.Mapping
             {
                 var child = ToTest(storageChild);
                 test.Children.Add(child);
-                await BuildTestTree(child, test);
+                await BuildTestTreeAsync(child);
             }
+        }
+
+        public async Task SetState(Test test, StateEnum state, string message)
+        {
+            var storageTest = await _storage.TestStorage.ReadAsync(Guid.Parse(test.Id));
+            storageTest.State = (int) state;
+            storageTest.StateMessage = message;
+            await _storage.TestStorage.UpdateAsync(storageTest);
+            test.State = state;
+            test.StateMessage = message;
         }
 
         private static Test ToTest(StorageTest storageTest)
         {
-            var test = new Test(storageTest.Id.ToString(), storageTest.Name);
-            // TODO: More props
+            var test = new Test(storageTest.Id.ToString(), storageTest.Name, storageTest.Description)
+            {
+                CreatedAt = storageTest.CreatedAt,
+                FinishedAt = storageTest.FinishedAt,
+                State = (StateEnum) storageTest.State,
+                StateMessage = storageTest.StateMessage,
+                Properties = storageTest.Properties
+            };
             return test;
         }
     }
@@ -64,6 +76,7 @@ namespace Service.Mapping
     {
         Task<Test> CreateRootAsync(string name);
         Task<Test> CreateAsync(string name, string parentId);
-        Task BuildTestTree(Test test);
+        Task BuildTestTreeAsync(Test test);
+        Task SetState(Test test, StateEnum state, string message);
     }
 }

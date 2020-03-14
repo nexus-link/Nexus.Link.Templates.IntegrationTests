@@ -37,7 +37,7 @@ namespace Service.Controllers
                 //testContext.Fail($"One of the tests did not catch the following exception: {e.ToLogString()}");
             }
 
-            await TestLogic.BuildTestTree(container);
+            await TestLogic.BuildTestTreeAsync(container);
             return container;
         }
 

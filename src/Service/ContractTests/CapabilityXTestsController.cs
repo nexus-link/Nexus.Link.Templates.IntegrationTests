@@ -30,7 +30,7 @@ namespace Service.ContractTests
 
             await RunTestablesSkippingRunAllAsync(container, new List<ITestable> { this });
 
-            await _testLogic.BuildTestTree(container);
+            await _testLogic.BuildTestTreeAsync(container);
             return container;
         }
 
@@ -41,6 +41,8 @@ namespace Service.ContractTests
             var test = await _testLogic.CreateAsync("Capability X Test 1", parentId);
 
             // TODO: Do test and update state
+
+            await _testLogic.SetState(test, StateEnum.Ok, "ok");
 
             return test;
         }

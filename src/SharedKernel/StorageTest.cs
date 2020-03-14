@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace SharedKernel
 {
@@ -7,5 +8,11 @@ namespace SharedKernel
         public Guid Id { get; set; }
         public Guid? ParentId { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? FinishedAt { get; set; }
+        public int State { get; set; }
+        public string StateMessage { get; set; }
+        public IDictionary<string, object> Properties { get; set; }
     }
 }

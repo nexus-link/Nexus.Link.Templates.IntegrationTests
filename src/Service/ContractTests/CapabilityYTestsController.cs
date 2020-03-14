@@ -30,7 +30,7 @@ namespace Service.ContractTests
 
             await RunTestablesSkippingRunAllAsync(container, new List<ITestable> { this });
 
-            await _testLogic.BuildTestTree(container);
+            await _testLogic.BuildTestTreeAsync(container);
             return container;
         }
 

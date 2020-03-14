@@ -51,7 +51,7 @@ namespace Service.Controllers
             }
 
 
-            await _testLogic.BuildTestTree(root);
+            await _testLogic.BuildTestTreeAsync(root);
             return root;
         }
 
