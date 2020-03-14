@@ -37,7 +37,7 @@ namespace Service.Controllers
             return testables;
         }
 
-        protected async Task RunTestables(Test container, List<ITestable> testables)
+        protected async Task RunTestablesSkippingRunAllAsync(Test container, List<ITestable> testables)
         {
             foreach (var testable in testables)
             {
@@ -48,6 +48,28 @@ namespace Service.Controllers
                         var group = testMethod.GetCustomAttribute<SwaggerGroupAttribute>();
                         var hideInSwagger = testMethod.GetCustomAttribute<ApiExplorerSettingsAttribute>();
                         return group != null && hideInSwagger == null && testMethod.Name != nameof(ITestable.RunAllAsync);
+                    })
+                    .ToList();
+
+                foreach (var method in methods)
+                {
+                    var task = (Task<Test>)method.Invoke(testable, new object?[] { container.Id });
+                    await task;
+                }
+            }
+        }
+
+        protected async Task RunTestablesOnlyRunAllAsync(Test container, List<ITestable> testables)
+        {
+            foreach (var testable in testables)
+            {
+                var methods = testable.GetType()
+                    .GetMethods()
+                    .Where(testMethod =>
+                    {
+                        var group = testMethod.GetCustomAttribute<SwaggerGroupAttribute>();
+                        var hideInSwagger = testMethod.GetCustomAttribute<ApiExplorerSettingsAttribute>();
+                        return group != null && hideInSwagger == null && testMethod.Name == nameof(ITestable.RunAllAsync);
                     })
                     .ToList();
 

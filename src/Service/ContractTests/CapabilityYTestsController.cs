@@ -11,11 +11,11 @@ namespace Service.ContractTests
 {
     [ApiController]
     [Route("[controller]")]
-    public class CapabilityXTestsController : TestControllerBase, ITestable
+    public class CapabilityYTestsController : TestControllerBase, ITestable
     {
         private readonly ITestLogic _testLogic;
 
-        public CapabilityXTestsController(ITestLogic testLogic) : base(testLogic)
+        public CapabilityYTestsController(ITestLogic testLogic) : base(testLogic)
         {
             _testLogic = testLogic;
         }
@@ -26,7 +26,7 @@ namespace Service.ContractTests
         [HttpPost("All")]
         public async Task<Test> RunAllAsync(string parentId = null)
         {
-            var container = await _testLogic.CreateAsync("Capability X contract tests", parentId);
+            var container = await _testLogic.CreateAsync("Capability Y contract tests", parentId);
 
             await RunTestablesSkippingRunAllAsync(container, new List<ITestable> { this });
 
@@ -38,7 +38,7 @@ namespace Service.ContractTests
         [HttpPost("Test1")]
         public async Task<Test> Test1(string parentId)
         {
-            var test = await _testLogic.CreateAsync("Capability X Test 1", parentId);
+            var test = await _testLogic.CreateAsync("Capability Y Test 1", parentId);
 
             // TODO: Do test and update state
 
@@ -49,7 +49,7 @@ namespace Service.ContractTests
         [HttpPost("Test2")]
         public async Task<Test> Test2(string parentId)
         {
-            var test = await _testLogic.CreateAsync("Capability X Test 2", parentId);
+            var test = await _testLogic.CreateAsync("Capability Y Test 2", parentId);
 
             // TODO: Do test and update state
 
