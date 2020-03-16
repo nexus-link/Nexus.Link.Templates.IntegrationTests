@@ -1,9 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Nexus.Link.Libraries.Core.Assert;
+using Nexus.Link.Libraries.Core.Error.Logic;
+using Nexus.Link.Libraries.Core.Misc;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
+using Nexus.Link.Libraries.Web.AspNet.Error.Logic;
+using Nexus.Link.Libraries.Web.AspNet.Pipe.Inbound;
 using Service.Mapping;
 using Service.Models;
 using SharedKernel;
@@ -36,7 +43,7 @@ namespace Service.Controllers
                     .Where(x => typeof(ITopLevel).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
                     .Select(x =>
                     {
-                        var instance = (ITestable) Activator.CreateInstance(x, _testLogic); // TODO: Not so nice
+                        var instance = (ITestable)Activator.CreateInstance(x, _testLogic); // TODO: Not so nice
                         return instance;
                     })
                     .ToList();
@@ -61,6 +68,15 @@ namespace Service.Controllers
             {
                 await testable.RunAllAsync(root.Id);
             }
+        }
+
+        [SwaggerGroup(SwaggerGroups.Common)]
+        [HttpGet("{id}")]
+        public async Task<Test> Get(Guid id)
+        {
+            var test = await _testLogic.Get(id.ToString());
+            if (test == null) throw new FulcrumNotFoundException(id.ToString());
+            return test;
         }
     }
 }

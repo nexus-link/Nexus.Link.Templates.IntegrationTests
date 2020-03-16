@@ -58,6 +58,15 @@ namespace Service.Mapping
             test.StateMessage = message;
         }
 
+        public async Task<Test> Get(string id)
+        {
+            var storageTest = await _storage.TestStorage.ReadAsync(Guid.Parse(id));
+            if (storageTest == null) return null;
+            var test = ToTest(storageTest);
+            await BuildTestTreeAsync(test);
+            return test;
+        }
+
         private static Test ToTest(StorageTest storageTest)
         {
             var test = new Test(storageTest.Id.ToString(), storageTest.Name, storageTest.Description)
@@ -78,5 +87,6 @@ namespace Service.Mapping
         Task<Test> CreateAsync(string name, string parentId);
         Task BuildTestTreeAsync(Test test);
         Task SetState(Test test, StateEnum state, string message);
+        Task<Test> Get(string id);
     }
 }
