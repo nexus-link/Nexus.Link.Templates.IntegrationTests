@@ -58,6 +58,16 @@ namespace Service.Mapping
             return test;
         }
 
+        public async Task<int> PurgeAsync(TimeSpan maxAge)
+        {
+            var testsToDelete = await _storage.TestStorage.GetOldTests(maxAge);
+            foreach (var test in testsToDelete)
+            {
+                await _storage.TestStorage.DeleteAsync(test.Id);
+            }
+            return testsToDelete.Count;
+        }
+
         private async Task<Test> ToTestRecursive(StorageTest storageTest)
         {
             var test = new Test(storageTest.Id.ToString(), storageTest.Name, storageTest.Description)
@@ -93,5 +103,6 @@ namespace Service.Mapping
         Task<Test> CreateAsync(string name, Test parent);
         Task SetState(Test test, StateEnum state, string message);
         Task<Test> Get(string id);
+        Task<int> PurgeAsync(TimeSpan maxAge);
     }
 }

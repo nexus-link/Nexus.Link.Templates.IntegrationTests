@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Service.BackgroundTasks;
 
 namespace Service
 {
@@ -15,6 +17,10 @@ namespace Service
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddHostedService<PurgeJob>();
                 });
     }
 }
