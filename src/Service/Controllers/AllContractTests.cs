@@ -21,9 +21,9 @@ namespace Service.Controllers
 
         [SwaggerGroup(SwaggerGroups.Common)]
         [HttpPost]
-        public async Task<Test> RunAllAsync(string parentId = null)
+        public async Task<Test> RunAllAsync(Test parent = null)
         {
-            var container = await TestLogic.CreateAsync("Contract tests", parentId);
+            var container = await TestLogic.CreateAsync("Contract tests", parent);
 
             try
             {
@@ -32,12 +32,9 @@ namespace Service.Controllers
             }
             catch (Exception e)
             {
-                // TODO
-                throw;
-                //testContext.Fail($"One of the tests did not catch the following exception: {e.ToLogString()}");
+                await TestLogic.SetState(container, StateEnum.Failed, e.Message);
             }
 
-            await TestLogic.BuildTestTreeAsync(container);
             return container;
         }
 

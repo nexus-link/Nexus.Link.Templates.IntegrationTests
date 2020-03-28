@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Nexus.Link.Libraries.Crud" Version="2.3.4" />
+    <PackageReference Include="System.Text.Json" Version="4.7.1" />
   </ItemGroup>
 
 </Project>

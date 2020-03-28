@@ -24,32 +24,32 @@ namespace Service.ContractTests
 
         [SwaggerGroup(SwaggerGroups.ContractTests)]
         [HttpPost("All")]
-        public async Task<Test> RunAllAsync(string parentId = null)
+        public async Task<Test> RunAllAsync(Test parent = null)
         {
-            var container = await _testLogic.CreateAsync("Capability Y contract tests", parentId);
+            var container = await _testLogic.CreateAsync("Capability Y contract tests", parent);
 
             await RunTestablesSkippingRunAllAsync(container, new List<ITestable> { this });
 
-            await _testLogic.BuildTestTreeAsync(container);
             return container;
         }
 
         [SwaggerGroup(SwaggerGroups.ContractTests)]
         [HttpPost("Test1")]
-        public async Task<Test> Test1(string parentId)
+        public async Task<Test> Test1(Test parent)
         {
-            var test = await _testLogic.CreateAsync("Capability Y Test 1", parentId);
+            var test = await _testLogic.CreateAsync("Capability Y Test 1", parent);
 
             // TODO: Do test and update state
+            await _testLogic.SetState(test, StateEnum.Failed, "awwwhh");
 
             return test;
         }
 
         [SwaggerGroup(SwaggerGroups.ContractTests)]
         [HttpPost("Test2")]
-        public async Task<Test> Test2(string parentId)
+        public async Task<Test> Test2(Test parent)
         {
-            var test = await _testLogic.CreateAsync("Capability Y Test 2", parentId);
+            var test = await _testLogic.CreateAsync("Capability Y Test 2", parent);
 
             // TODO: Do test and update state
 

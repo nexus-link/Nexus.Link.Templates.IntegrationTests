@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 
 namespace SharedKernel
@@ -21,16 +22,37 @@ namespace SharedKernel
         [JsonProperty(Order = 5)]
         public DateTimeOffset? FinishedAt { get; set; }
 
-        [JsonProperty(Order = 6)]
-        public StateEnum State { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public StateEnum InternalState { get; set; }
 
-        [JsonProperty(Order = 7)]
-        public string StateMessage { get; set; }
+        [JsonProperty(Order = 7)] public StateEnum State => CalculateStateRecursive(this);
+
+        private StateEnum CalculateStateRecursive(Test test)
+        {
+            if (test.InternalState != StateEnum.Waiting) return test.InternalState;
+            if (test.Children == null || !test.Children.Any()) return test.InternalState;
+
+            var childrenStates = new List<StateEnum>();
+            foreach (var child in test.Children)
+            {
+                var childState = CalculateStateRecursive(child);
+                childrenStates.Add(childState);
+            }
+
+            if (childrenStates.All(x => x == StateEnum.Ok)) return StateEnum.Ok;
+            if (childrenStates.Any(x => x == StateEnum.Failed)) return StateEnum.Failed;
+            return StateEnum.Waiting;
+
+            // TODO: When to save calculated states?
+        }
 
         [JsonProperty(Order = 8)]
-        public IDictionary<string, object> Properties { get; set; }
+        public string StateMessage { get; set; }
 
         [JsonProperty(Order = 9)]
+        public IDictionary<string, object> Properties { get; set; }
+
+        [JsonProperty(Order = 10)]
         public List<Test> Children { get; set; }
 
         public Test() { }
@@ -40,7 +62,7 @@ namespace SharedKernel
             Id = id;
             Name = name;
             Description = description;
-            State = StateEnum.Waiting;
+            InternalState = StateEnum.Waiting;
             CreatedAt = DateTimeOffset.Now;
         }
     }
