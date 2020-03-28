@@ -2,6 +2,15 @@
 
 Based on the Nexus concept and the thoughts described here: [Testing overview](https://docs.nexus.link/docs/platformtesting-overview)
 
+## TODOs
+
+* Logging
+* Authentication
+* Stubs for Business Api tests
+* Stubs for Business Processes tests
+* Database
+* When to save calculated states?
+
 ## Support for multiple instances
 
 The template can be used in two different modes, with a database or a memory storage. When using a database you get support for running the test service on multiple instances.
@@ -12,13 +21,11 @@ Locally and in single instance environments the service can be run with memory s
 
 ## Database
 
-TODO: Choose option
-
 OPTION 1: Cosmos DB in MongoDB mode. Or Cassandra mode?
 
 OPTION 2: Nexus DatabasePatcher is used to keep an SQL database schema in sync at startup. To use a database, add the `ConnectionString` app setting.
 
-OPTION 3: Table storage
+OPTION 3: Table storage. To use, add the `ConnectionString` app setting.
 
 ### Purging the database
 
