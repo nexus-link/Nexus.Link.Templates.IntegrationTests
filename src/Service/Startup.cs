@@ -1,14 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using DataAccess.Memory;
+using DataAccess.TableStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Nexus.Link.Libraries.Core.Application;
-using Nexus.Link.Libraries.Core.MultiTenant.Model;
 using Nexus.Link.Libraries.Web.AspNet.Pipe.Inbound;
 using Service.Mapping;
 using SharedKernel;
@@ -27,13 +25,6 @@ namespace Service
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var nexusSetting = Configuration.GetSection("NexusSettings").Get<NexusSettings>();
-            var tenant = new Tenant(nexusSetting.Organization, nexusSetting.Environment);
-            var runTimeLevel = (RunTimeLevelEnum)Enum.Parse(typeof(RunTimeLevelEnum), nexusSetting.RunTimeLevel);
-            FulcrumApplicationHelper.RuntimeSetup(nexusSetting.ApplicationName, tenant, runTimeLevel);
-
-            // TODO: Logging
-
             services
                 .AddMvc()
                 .AddMvcOptions(options => options.EnableEndpointRouting = false)
@@ -54,10 +45,16 @@ namespace Service
                 c.TagActionsBy(api => new List<string> { api.GroupName });
             });
 
-            // TODO: Patch if using database
-
-            // TODO: Check configuration if we're using database
-            services.AddSingleton<IStorage, MemoryStorage>();
+            var connectionString = Configuration["ConnectionString"];
+            if (!string.IsNullOrWhiteSpace(connectionString))
+            {
+                var tableStorage = new TableStorage(connectionString);
+                services.AddSingleton<IStorage>(tableStorage);
+            }
+            else
+            {
+                services.AddSingleton<IStorage, MemoryStorage>();
+            }
             services.AddSingleton<ITestLogic, TestLogic>();
         }
 

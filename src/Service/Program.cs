@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Nexus.Link.Libraries.Core.Application;
+using Nexus.Link.Libraries.Core.Logging;
 using Service.BackgroundTasks;
+using FulcrumApplicationHelper = Nexus.Link.Libraries.Web.AspNet.Application.FulcrumApplicationHelper;
 
 namespace Service
 {
@@ -18,9 +21,14 @@ namespace Service
                 {
                     webBuilder.UseStartup<Startup>();
                 })
-                .ConfigureServices(services =>
+                .ConfigureServices((context, services) =>
                 {
+                    FulcrumApplicationHelper.WebBasicSetup(context.Configuration);
                     services.AddHostedService<PurgeJob>();
+                })
+                .ConfigureLogging((context, loggingBuilder) =>
+                {
+                    FulcrumApplication.Setup.SynchronousFastLogger = new DebugTraceLogger(); // TODO
                 });
     }
 }

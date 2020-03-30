@@ -25,18 +25,20 @@ namespace Service.BackgroundTasks
         public Task StartAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Purge job starting.");
-            _timer = new Timer(async (state) => { await DoWork(state); }, null, TimeSpan.Zero, PurgeInterval);
-            _logger.LogInformation($"Purge job started with {nameof(PurgeInterval)} = {PurgeInterval} and {nameof(MaxAge)} = {MaxAge}.");
 
+            _timer = new Timer(async (state) => { await DoWork(state); }, null, TimeSpan.Zero, PurgeInterval);
+            
+            _logger.LogInformation($"Purge job started with {nameof(PurgeInterval)} = {PurgeInterval} and {nameof(MaxAge)} = {MaxAge}.");
             return Task.CompletedTask;
         }
 
         private async Task DoWork(object state)
         {
-            _logger.LogInformation("Purging starting.");
+            _logger.LogInformation("Purge work starting...");
             try
             {
                 var purgedTests = await _testLogic.PurgeAsync(MaxAge);
+
                 _logger.LogInformation($"Done. Purged {purgedTests} tests.");
             }
             catch (Exception e)
@@ -49,6 +51,7 @@ namespace Service.BackgroundTasks
         public Task StopAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Purge job stopping.");
+            
             _timer?.Change(Timeout.Infinite, 0);
 
             return Task.CompletedTask;

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Nexus.Link.Libraries.Core.Storage.Model;
 
 namespace SharedKernel
 {
-    public class StorageTest
+    public class StorageTest : IOptimisticConcurrencyControlByETag
     {
         public Guid Id { get; set; }
+        public string Etag { get; set; }
         public Guid? ParentId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
