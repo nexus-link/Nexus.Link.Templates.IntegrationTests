@@ -41,7 +41,7 @@ namespace Service.ContractTests.Capability1
             var test = await _testLogic.CreateAsync("Capability 1 Test 1 (event)", parent);
 
             FulcrumApplication.Context.CorrelationId = test.Id;
-            // TODO: "Send event"
+            // TODO: "Do call to capability and expect an event to be sent"
 
 
             return test;
