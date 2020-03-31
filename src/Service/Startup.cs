@@ -21,10 +21,13 @@ namespace Service
         }
 
         public IConfiguration Configuration { get; }
+        public static string ApiName;
 
 
         public void ConfigureServices(IServiceCollection services)
         {
+            ApiName = Configuration["ApiName"];
+
             services
                 .AddMvc()
                 .AddMvcOptions(options => options.EnableEndpointRouting = false)
@@ -40,7 +43,7 @@ namespace Service
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = Configuration["ApiName"], Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = ApiName, Version = "v1" });
                 c.EnableAnnotations();
                 c.TagActionsBy(api => new List<string> { api.GroupName });
             });

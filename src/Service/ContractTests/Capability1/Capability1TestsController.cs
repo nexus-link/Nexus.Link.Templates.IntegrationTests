@@ -1,21 +1,22 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Service.Controllers;
 using Service.Mapping;
 using Service.Models;
 using SharedKernel;
 
-namespace Service.ContractTests
+namespace Service.ContractTests.Capability1
 {
     [ApiController]
-    [Route("[controller]")]
-    public class CapabilityYTestsController : TestControllerBase, ITestable
+    [Route("api/v1/[controller]")]
+    public class Capability1TestsController : TestControllerBase, ITestable
     {
         private readonly ITestLogic _testLogic;
 
-        public CapabilityYTestsController(ITestLogic testLogic) : base(testLogic)
+        public Capability1TestsController(ITestLogic testLogic) : base(testLogic)
         {
             _testLogic = testLogic;
         }
@@ -26,7 +27,7 @@ namespace Service.ContractTests
         [HttpPost("All")]
         public async Task<Test> RunAllAsync(Test parent = null)
         {
-            var container = await _testLogic.CreateAsync("Capability Y contract tests", parent);
+            var container = await _testLogic.CreateAsync("Capability 1 contract tests", parent);
 
             await RunTestablesSkippingRunAllAsync(container, new List<ITestable> { this });
 
@@ -37,10 +38,11 @@ namespace Service.ContractTests
         [HttpPost("Test1")]
         public async Task<Test> Test1(Test parent)
         {
-            var test = await _testLogic.CreateAsync("Capability Y Test 1", parent);
+            var test = await _testLogic.CreateAsync("Capability 1 Test 1 (event)", parent);
 
-            // TODO: Do test and update state
-            await _testLogic.SetState(test, StateEnum.Failed, "awwwhh");
+            FulcrumApplication.Context.CorrelationId = test.Id;
+            // TODO: "Send event"
+
 
             return test;
         }
@@ -49,9 +51,10 @@ namespace Service.ContractTests
         [HttpPost("Test2")]
         public async Task<Test> Test2(Test parent)
         {
-            var test = await _testLogic.CreateAsync("Capability Y Test 2", parent);
+            var test = await _testLogic.CreateAsync("Capability 1 Test 2", parent);
 
             // TODO: Do test and update state
+            await _testLogic.SetState(test, StateEnum.Ok, "ok");
 
             return test;
         }

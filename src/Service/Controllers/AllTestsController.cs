@@ -12,7 +12,7 @@ using SharedKernel;
 namespace Service.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/v1/[controller]")]
     public class AllTestsController : ControllerBase
     {
         private readonly ITestLogic _testLogic;
