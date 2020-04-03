@@ -112,12 +112,14 @@ namespace DataAccess.TableStorage
 
                 // Note! Would like to use this, but throws "Delete requires an ETag (which may be the '*' wildcard)"
                 // await DeleteAsync(PartitionKey, id.ToString());
-                
+
                 var tableRequestOptions = new TableRequestOptions();
                 var operationContext = new OperationContext();
 
                 var entity = new TableEntity(PartitionKey, id.ToString()) { ETag = test.Etag };
                 await Table.ExecuteAsync(TableOperation.Delete(entity), tableRequestOptions, operationContext);
+                
+                // TODO: Delete from ParentKey
             }
             catch (Exception e)
             {
