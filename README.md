@@ -1,6 +1,6 @@
 # Platform integration testing template
 
-Based on the Nexus concept and the thoughts described here: [Testing overview](https://docs.nexus.link/docs/platformtesting-overview)
+Based on the Nexus concept and the thoughts described here: [Platform Integration Testing Overview](https://docs.nexus.link/docs/platformtesting-overview)
 
 ## TODOs
 
@@ -8,12 +8,12 @@ Based on the Nexus concept and the thoughts described here: [Testing overview](h
 * Authentication
 * Stubs for Business Api tests
 * Stubs for Business Processes tests
-* Database
 * When to save calculated states?
+* Multi-environment support?
 
 ## Support for multiple instances
 
-The template can be used in two different modes, with a database or a memory storage. When using a database you get support for running the test service on multiple instances.
+The template can be used in two different modes, with a physical (sql or table) or a memory storage. When using a database you get support for running the test service on multiple instances.
 
 ## Memory storage
 
@@ -21,11 +21,9 @@ Locally and in single instance environments the service can be run with memory s
 
 ## Database
 
-OPTION 1: Cosmos DB in MongoDB mode. Or Cassandra mode?
+You can provide the app setting `SqlConnectionString` to use an Azure SQL database.
 
-OPTION 2: Nexus DatabasePatcher is used to keep an SQL database schema in sync at startup. To use a database, add the `ConnectionString` app setting.
-
-OPTION 3: Table storage. To use, add the `ConnectionString` app setting.
+Or provide `StorageConnectionString` to use Azure Table Storage.
 
 ### Purging the database
 
