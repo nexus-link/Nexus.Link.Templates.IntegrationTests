@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using DataAccess.Memory;
+using DataAccess.Sql;
 using DataAccess.TableStorage;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
@@ -15,12 +17,15 @@ namespace Service
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment hostEnvironment)
         {
             Configuration = configuration;
+            HostEnvironment = hostEnvironment;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment HostEnvironment { get; }
+
         public static string ApiName;
 
 
@@ -48,10 +53,17 @@ namespace Service
                 c.TagActionsBy(api => new List<string> { api.GroupName });
             });
 
-            var connectionString = Configuration["ConnectionString"];
-            if (!string.IsNullOrWhiteSpace(connectionString))
+            var sqlConnectionString = Configuration["SqlConnectionString"];
+            var storageConnectionString = Configuration["StorageConnectionString"];
+            if (!string.IsNullOrWhiteSpace(sqlConnectionString))
             {
-                var tableStorage = new TableStorage(connectionString);
+                var sqlStorage = new SqlStorage(sqlConnectionString);
+                services.AddSingleton<IStorage>(sqlStorage);
+                new DatabasePatcherHandler(HostEnvironment.ContentRootPath).PatchIfNecessary(Configuration["Environment"], sqlConnectionString, Configuration["MasterConnectionString"]);
+            }
+            else if (!string.IsNullOrWhiteSpace(storageConnectionString))
+            {
+                var tableStorage = new TableStorage(storageConnectionString);
                 services.AddSingleton<IStorage>(tableStorage);
             }
             else

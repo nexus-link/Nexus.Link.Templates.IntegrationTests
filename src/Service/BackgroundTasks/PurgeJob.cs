@@ -44,7 +44,6 @@ namespace Service.BackgroundTasks
             catch (Exception e)
             {
                 _logger.LogError($"Error purging: {e.Message}", e);
-                throw;
             }
         }
 

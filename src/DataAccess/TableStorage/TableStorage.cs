@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
 using Nexus.Link.Libraries.Azure.Storage.Table;
 using Nexus.Link.Libraries.Core.Logging;
 using Nexus.Link.Libraries.Core.Storage.Logic;
@@ -51,7 +49,7 @@ namespace DataAccess.TableStorage
                 Id = Guid.NewGuid(),
                 ParentId = parentId,
                 Name = name,
-                CreatedAt = DateTimeOffset.Now
+                RecordCreatedAt = DateTimeOffset.Now
             };
 
             await CreateAsync(PartitionKey, item.Id.ToString(), item);
@@ -91,7 +89,7 @@ namespace DataAccess.TableStorage
             while (await enumerator.MoveNextAsync())
             {
                 var item = enumerator.Current;
-                if (item.CreatedAt.Add(maxAge) < DateTimeOffset.Now)
+                if (item.RecordCreatedAt.Add(maxAge) < DateTimeOffset.Now)
                 {
                     old.Add(item);
                 }
@@ -110,15 +108,8 @@ namespace DataAccess.TableStorage
                     return;
                 }
 
-                // Note! Would like to use this, but throws "Delete requires an ETag (which may be the '*' wildcard)"
-                // await DeleteAsync(PartitionKey, id.ToString());
+                await DeleteAsync(PartitionKey, id.ToString());
 
-                var tableRequestOptions = new TableRequestOptions();
-                var operationContext = new OperationContext();
-
-                var entity = new TableEntity(PartitionKey, id.ToString()) { ETag = test.Etag };
-                await Table.ExecuteAsync(TableOperation.Delete(entity), tableRequestOptions, operationContext);
-                
                 // TODO: Delete from ParentKey
             }
             catch (Exception e)

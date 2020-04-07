@@ -72,7 +72,7 @@ namespace Service.Mapping
         {
             var test = new Test(storageTest.Id.ToString(), storageTest.Name, storageTest.Description)
             {
-                CreatedAt = storageTest.CreatedAt,
+                CreatedAt = storageTest.RecordCreatedAt,
                 FinishedAt = storageTest.FinishedAt,
                 InternalState = (StateEnum) storageTest.State,
                 StateMessage = storageTest.StateMessage,

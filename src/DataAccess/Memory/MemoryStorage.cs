@@ -43,7 +43,7 @@ namespace DataAccess.Memory
                 Id = id,
                 ParentId = null,
                 Name = name,
-                CreatedAt = DateTimeOffset.Now
+                RecordCreatedAt = DateTimeOffset.Now
             };
             var test = await CreateWithSpecifiedIdAndReturnAsync(fakeParentId, item.Id, item);
             AllTests.TryAdd(test.Id, test);
@@ -57,7 +57,7 @@ namespace DataAccess.Memory
                 Id = Guid.NewGuid(),
                 ParentId = parentId,
                 Name = name,
-                CreatedAt = DateTimeOffset.Now
+                RecordCreatedAt = DateTimeOffset.Now
             };
             _compensatingForParentIdsCannotBeNull.Set(item.Id, parentId);
 
@@ -96,7 +96,7 @@ namespace DataAccess.Memory
             var old = new List<StorageTest>();
             foreach (var test in AllTests.Values)
             {
-                if (test.CreatedAt.Add(maxAge) < DateTimeOffset.Now)
+                if (test.RecordCreatedAt.Add(maxAge) < DateTimeOffset.Now)
                 {
                     old.Add(test);
                 }
