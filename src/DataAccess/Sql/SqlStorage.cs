@@ -18,7 +18,7 @@ namespace DataAccess.Sql
         public ITestStorage TestStorage { get; set; }
     }
 
-    public class SqlTestStorage : CrudSql<StorageTest, StorageTest>, ITestStorage
+    public class SqlTestStorage : CrudSql<StorageTestSql, StorageTestSql>, ITestStorage
     {
         public SqlTestStorage(string connectionString) : base(connectionString, new SqlTableMetadata
         {
@@ -26,7 +26,7 @@ namespace DataAccess.Sql
             CreatedAtColumnName = "RecordCreatedAt",
             UpdatedAtColumnName = "RecordUpdatedAt",
             EtagColumnName = "Etag",
-            CustomColumnNames = new[] { "ParentId", "Name", "Description", "FinishedAt", "State", "StateMessage"/*TODO:, "PropertiesJson"*/ },
+            CustomColumnNames = new[] { "ParentId", "Name", "Description", "FinishedAt", "State", "StateMessage", "PropertiesJson" },
             OrderBy = new[] { "Name", "Id" }
         })
         {
@@ -44,7 +44,7 @@ namespace DataAccess.Sql
 
         private async Task<StorageTest> CreateAndReturn(string name, Guid? parentId)
         {
-            var item = new StorageTest
+            var item = new StorageTestSql
             {
                 Id = Guid.NewGuid(),
                 ParentId = parentId,
@@ -54,30 +54,33 @@ namespace DataAccess.Sql
             };
 
             var test = await base.CreateAndReturnAsync(item);
-            return test;
+            return test.ToStorageTest();
         }
 
         public async Task<List<StorageTest>> GetChildren(Guid id)
         {
             var children = await base.SearchWhereAsync("ParentId = @id", "RecordCreatedAt ASC", new { id });
-            return children.Data.ToList();
+            return children.Data.Select(x => x.ToStorageTest()).ToList();
         }
 
         public async Task<StorageTest> ReadAsync(Guid id)
         {
             var test = await base.ReadAsync(id);
-            return test;
+            return test.ToStorageTest();
         }
 
         public async Task UpdateAsync(StorageTest storageTest)
         {
-            await base.UpdateAsync(storageTest.Id, storageTest);
+            await base.UpdateAsync(storageTest.Id, new StorageTestSql(storageTest));
         }
 
         public async Task<List<StorageTest>> GetOldTests(TimeSpan maxAge)
         {
             var allTests = await base.ReadAllAsync();
-            return allTests.Where(test => test.RecordCreatedAt.Add(maxAge) < DateTimeOffset.Now).ToList();
+            return allTests
+                .Where(test => test.RecordCreatedAt.Add(maxAge) < DateTimeOffset.Now)
+                .Select(x => x.ToStorageTest())
+                .ToList();
         }
 
         public async Task DeleteAsync(Guid id)

@@ -40,7 +40,7 @@ namespace Service.ContractTests.Capability2
             var test = await _testLogic.CreateAsync("Capability 2 Test 1", parent);
 
             // TODO: Do test and update state
-            await _testLogic.SetState(test, StateEnum.Failed, "awwwhh");
+            await _testLogic.SetStateAsync(test, StateEnum.Failed, "awwwhh");
 
             return test;
         }

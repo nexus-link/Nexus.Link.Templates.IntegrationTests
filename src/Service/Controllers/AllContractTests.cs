@@ -32,7 +32,7 @@ namespace Service.Controllers
             }
             catch (Exception e)
             {
-                await TestLogic.SetState(container, StateEnum.Failed, e.Message);
+                await TestLogic.SetStateAsync(container, StateEnum.Failed, e.Message);
             }
 
             return container;

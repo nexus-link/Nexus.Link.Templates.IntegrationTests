@@ -43,7 +43,7 @@ namespace Service.Controllers
             }
             catch (Exception e)
             {
-                await _testLogic.SetState(root, StateEnum.Failed, e.Message);
+                await _testLogic.SetStateAsync(root, StateEnum.Failed, e.Message);
             }
 
             return root;
@@ -61,7 +61,7 @@ namespace Service.Controllers
         [HttpGet("{id}")]
         public async Task<Test> Get(Guid id)
         {
-            var test = await _testLogic.Get(id.ToString());
+            var test = await _testLogic.GetAsync(id.ToString());
             if (test == null) throw new FulcrumNotFoundException(id.ToString());
             return test;
         }

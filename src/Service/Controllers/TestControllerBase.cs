@@ -75,8 +75,8 @@ namespace Service.Controllers
                     }
                     catch (Exception e)
                     {
-                        if (test != null) await TestLogic.SetState(test, StateEnum.Failed, e.Message);
-                        else await TestLogic.SetState(container, StateEnum.Failed, e.Message);
+                        if (test != null) await TestLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
+                        else await TestLogic.SetStateAsync(container, StateEnum.Failed, e.Message);
                     }
                 }
             }

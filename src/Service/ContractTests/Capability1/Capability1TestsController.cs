@@ -54,7 +54,9 @@ namespace Service.ContractTests.Capability1
             var test = await _testLogic.CreateAsync("Capability 1 Test 2", parent);
 
             // TODO: Do test and update state
-            await _testLogic.SetState(test, StateEnum.Ok, "ok");
+            test.Properties = new Dictionary<string, object> { { "x", "y" }, { "apa", new { Type = "great-ape", Name = "Gorilla", Id = 23 } } };
+            await _testLogic.UpdateAsync(test);
+            await _testLogic.SetStateAsync(test, StateEnum.Ok, "ok");
 
             return test;
         }

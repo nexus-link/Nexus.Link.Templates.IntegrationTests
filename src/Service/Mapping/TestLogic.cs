@@ -28,7 +28,7 @@ namespace Service.Mapping
             {
                 return await CreateRootAsync(name);
             }
-            
+
             var storageTest = await _storage.TestStorage.CreateAsync(name, Guid.Parse(parent.Id));
 
             var test = await ToTestRecursive(storageTest);
@@ -38,18 +38,29 @@ namespace Service.Mapping
             return test;
         }
 
-        public async Task SetState(Test test, StateEnum state, string message)
+        public async Task SetStateAsync(Test test, StateEnum state, string message)
         {
             test.InternalState = state;
             test.StateMessage = message;
+            await UpdateAsync(test);
+        }
 
+        public async Task UpdateAsync(Test test)
+        {
             var storageTest = await _storage.TestStorage.ReadAsync(Guid.Parse(test.Id));
+
+            storageTest.Name = test.Name;
+            storageTest.Description = test.Description;
+            storageTest.FinishedAt = test.FinishedAt;
+            storageTest.RecordUpdatedAt = DateTimeOffset.Now;
             storageTest.State = (int)test.InternalState;
             storageTest.StateMessage = test.StateMessage;
+            storageTest.Properties = test.Properties;
+
             await _storage.TestStorage.UpdateAsync(storageTest);
         }
 
-        public async Task<Test> Get(string id)
+        public async Task<Test> GetAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
             var storageTest = await _storage.TestStorage.ReadAsync(Guid.Parse(id));
@@ -74,7 +85,7 @@ namespace Service.Mapping
             {
                 CreatedAt = storageTest.RecordCreatedAt,
                 FinishedAt = storageTest.FinishedAt,
-                InternalState = (StateEnum) storageTest.State,
+                InternalState = (StateEnum)storageTest.State,
                 StateMessage = storageTest.StateMessage,
                 Properties = storageTest.Properties
             };
@@ -101,8 +112,9 @@ namespace Service.Mapping
     {
         Task<Test> CreateRootAsync(string name);
         Task<Test> CreateAsync(string name, Test parent);
-        Task SetState(Test test, StateEnum state, string message);
-        Task<Test> Get(string id);
+        Task SetStateAsync(Test test, StateEnum state, string message);
+        Task UpdateAsync(Test test);
+        Task<Test> GetAsync(string id);
         Task<int> PurgeAsync(TimeSpan maxAge);
     }
 }

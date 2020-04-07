@@ -36,7 +36,7 @@ namespace Service.ContractTests.Capability1
                 return;
             }
 
-            var test = await TestLogic.Get(testId);
+            var test = await TestLogic.GetAsync(testId);
             if (test == null)
             {
                 Log.LogError($"There was no test with id {testId}. Payload was {JsonSerializer.Serialize(payload)}.");
@@ -46,11 +46,11 @@ namespace Service.ContractTests.Capability1
             // Check translation
             if (payload?.Person?.Gender != "male")
             {
-                await TestLogic.SetState(test, StateEnum.Failed, $"Expected {nameof(Event1.Person.Gender)} to be 'male', but was '{payload?.Person?.Gender}'");
+                await TestLogic.SetStateAsync(test, StateEnum.Failed, $"Expected {nameof(Event1.Person.Gender)} to be 'male', but was '{payload?.Person?.Gender}'");
             }
             else
             {
-                await TestLogic.SetState(test, StateEnum.Ok, $"Event subscribed by {Startup.ApiName}");
+                await TestLogic.SetStateAsync(test, StateEnum.Ok, $"Event subscribed by {Startup.ApiName}");
             }
 
         }
