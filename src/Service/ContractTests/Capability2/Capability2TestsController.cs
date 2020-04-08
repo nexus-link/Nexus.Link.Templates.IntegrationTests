@@ -20,9 +20,9 @@ namespace Service.ContractTests.Capability2
             _testLogic = testLogic;
         }
 
-        public string Group => SwaggerGroups.ContractTests;
+        public string Group => TestGrouping.ContractTests;
 
-        [SwaggerGroup(SwaggerGroups.ContractTests)]
+        [SwaggerGroup(TestGrouping.ContractTests)]
         [HttpPost("All")]
         public async Task<Test> RunAllAsync(Test parent = null)
         {
@@ -33,7 +33,7 @@ namespace Service.ContractTests.Capability2
             return container;
         }
 
-        [SwaggerGroup(SwaggerGroups.ContractTests)]
+        [SwaggerGroup(TestGrouping.ContractTests)]
         [HttpPost("Test1")]
         public async Task<Test> Test1(Test parent)
         {
@@ -45,7 +45,7 @@ namespace Service.ContractTests.Capability2
             return test;
         }
 
-        [SwaggerGroup(SwaggerGroups.ContractTests)]
+        [SwaggerGroup(TestGrouping.ContractTests)]
         [HttpPost("Test2")]
         public async Task<Test> Test2(Test parent)
         {

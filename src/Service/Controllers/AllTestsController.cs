@@ -22,7 +22,7 @@ namespace Service.Controllers
             _testLogic = testLogic;
         }
 
-        [SwaggerGroup(SwaggerGroups.Common)]
+        [SwaggerGroup(TestGrouping.Common)]
         [HttpPost]
         public async Task<Test> RunAllAsync()
         {
@@ -57,7 +57,7 @@ namespace Service.Controllers
             }
         }
 
-        [SwaggerGroup(SwaggerGroups.Common)]
+        [SwaggerGroup(TestGrouping.Common)]
         [HttpGet("{id}")]
         public async Task<Test> Get(Guid id)
         {

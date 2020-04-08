@@ -1,6 +1,6 @@
 ﻿namespace Service
 {
-    public class SwaggerGroups
+    public class TestGrouping
     {
         public const string Common = "Common";
         public const string ContractTests = "Contract tests";

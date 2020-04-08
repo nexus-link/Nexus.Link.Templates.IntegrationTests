@@ -17,9 +17,9 @@ namespace Service.Controllers
         {
         }
 
-        public string Group => SwaggerGroups.Common;
+        public string Group => TestGrouping.Common;
 
-        [SwaggerGroup(SwaggerGroups.Common)]
+        [SwaggerGroup(TestGrouping.Common)]
         [HttpPost]
         public async Task<Test> RunAllAsync(Test parent = null)
         {
@@ -27,7 +27,7 @@ namespace Service.Controllers
 
             try
             {
-                var testables = FindTestables(SwaggerGroups.ContractTests);
+                var testables = FindTestables(TestGrouping.ContractTests);
                 await RunTestablesOnlyRunAllAsync(container, testables);
             }
             catch (Exception e)
