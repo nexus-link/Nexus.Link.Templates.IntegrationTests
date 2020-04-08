@@ -7,6 +7,7 @@ using Service.ContractTests.Capability1.Models;
 using Service.Controllers;
 using Service.Mapping;
 using SharedKernel;
+#pragma warning disable 1591
 
 namespace Service.ContractTests.Capability1
 {

@@ -1,4 +1,6 @@
-﻿namespace Service.ContractTests.Capability1.Models
+﻿#pragma warning disable 1591
+
+namespace Service.ContractTests.Capability1.Models
 {
     public class Event1
     {

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Json.Serialization;
 using DataAccess.Memory;
 using DataAccess.Sql;
@@ -15,27 +16,37 @@ using SharedKernel;
 
 namespace Service
 {
+    /// <summary></summary>
     public class Startup
     {
+        /// <summary></summary>
         public Startup(IConfiguration configuration, IWebHostEnvironment hostEnvironment)
         {
             Configuration = configuration;
             HostEnvironment = hostEnvironment;
         }
 
+        /// <summary></summary>
         public IConfiguration Configuration { get; }
+        /// <summary></summary>
         public IWebHostEnvironment HostEnvironment { get; }
 
+        /// <summary></summary>
         public static string ApiName;
 
 
+        /// <summary></summary>
         public void ConfigureServices(IServiceCollection services)
         {
             ApiName = Configuration["ApiName"];
 
             services
                 .AddMvc()
-                .AddMvcOptions(options => options.EnableEndpointRouting = false)
+                .AddMvcOptions(options =>
+                {
+                    options.EnableEndpointRouting = false;
+                    options.AllowEmptyInputInBodyModelBinding = true;
+                })
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.IgnoreNullValues = true;
@@ -51,6 +62,9 @@ namespace Service
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = ApiName, Version = "v1" });
                 c.EnableAnnotations();
                 c.TagActionsBy(api => new List<string> { api.GroupName });
+                
+                var xmlFile = Path.ChangeExtension(typeof(Startup).Assembly.Location, ".xml");
+                c.IncludeXmlComments(xmlFile);
             });
 
             var sqlConnectionString = Configuration["SqlConnectionString"];
@@ -73,6 +87,7 @@ namespace Service
             services.AddSingleton<ITestLogic, TestLogic>();
         }
 
+        /// <summary></summary>
         public void Configure(IApplicationBuilder app)
         {
             // Get the correlation ID from the request header and store it in FulcrumApplication.Context

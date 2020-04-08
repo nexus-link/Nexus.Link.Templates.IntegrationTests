@@ -6,15 +6,20 @@ using SharedKernel;
 
 namespace Service.Mapping
 {
+    /// <summary>
+    /// Maps models from outside world to storage world
+    /// </summary>
     public class TestLogic : ITestLogic
     {
         private readonly IStorage _storage;
 
+        /// <summary></summary>
         public TestLogic(IStorage storage)
         {
             _storage = storage;
         }
 
+        /// <inheritdoc />
         public async Task<Test> CreateRootAsync(string name)
         {
             var storageRoot = await _storage.TestStorage.CreateRootAsync(name);
@@ -22,6 +27,7 @@ namespace Service.Mapping
             return root;
         }
 
+        /// <inheritdoc />
         public async Task<Test> CreateAsync(string name, Test parent)
         {
             if (parent == null)
@@ -38,6 +44,7 @@ namespace Service.Mapping
             return test;
         }
 
+        /// <inheritdoc />
         public async Task SetStateAsync(Test test, StateEnum state, string message)
         {
             test.InternalState = state;
@@ -45,6 +52,7 @@ namespace Service.Mapping
             await UpdateAsync(test);
         }
 
+        /// <inheritdoc />
         public async Task UpdateAsync(Test test)
         {
             var storageTest = await _storage.TestStorage.ReadAsync(Guid.Parse(test.Id));
@@ -60,6 +68,7 @@ namespace Service.Mapping
             await _storage.TestStorage.UpdateAsync(storageTest);
         }
 
+        /// <inheritdoc />
         public async Task<Test> GetAsync(string id)
         {
             if (string.IsNullOrWhiteSpace(id)) return null;
@@ -69,6 +78,7 @@ namespace Service.Mapping
             return test;
         }
 
+        /// <inheritdoc />
         public async Task<int> PurgeAsync(TimeSpan maxAge)
         {
             var testsToDelete = await _storage.TestStorage.GetOldTests(maxAge);
@@ -108,13 +118,37 @@ namespace Service.Mapping
 
     }
 
+    /// <summary></summary>
     public interface ITestLogic
     {
+        /// <summary>
+        /// Create a test without parent
+        /// </summary>
         Task<Test> CreateRootAsync(string name);
+
+        /// <summary>
+        /// Create a test (with a parent)
+        /// </summary>
         Task<Test> CreateAsync(string name, Test parent);
+
+        /// <summary>
+        /// Set the state of a test
+        /// </summary>
         Task SetStateAsync(Test test, StateEnum state, string message);
+
+        /// <summary>
+        /// Save a state to storage
+        /// </summary>
         Task UpdateAsync(Test test);
+
+        /// <summary>
+        /// Get a test by id
+        /// </summary>
         Task<Test> GetAsync(string id);
+
+        /// <summary>
+        /// Remove all tests older than a time span
+        /// </summary>
         Task<int> PurgeAsync(TimeSpan maxAge);
     }
 }

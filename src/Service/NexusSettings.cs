@@ -1,5 +1,6 @@
 ﻿namespace Service
 {
+    /// <summary></summary>
     public class NexusSettings
     {
         /// <summary></summary>

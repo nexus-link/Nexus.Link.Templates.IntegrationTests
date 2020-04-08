@@ -1,69 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Nexus.Link.Libraries.Core.Error.Logic;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Service.Mapping;
-using Service.Models;
 using SharedKernel;
 
 namespace Service.Controllers
 {
+    /// <summary>
+    /// Convenience for running all tests in different categories.
+    /// </summary>
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class AllTestsController : ControllerBase
+    public class AllTestsController : TestControllerBase
     {
-        private readonly ITestLogic _testLogic;
-
-        public AllTestsController(ITestLogic testLogic)
+        /// <summary></summary>
+        public AllTestsController(ITestLogic testLogic) : base(testLogic)
         {
-            _testLogic = testLogic;
         }
 
+        /// <summary>
+        /// Run ALL tests.
+        /// </summary>
+        /// <returns></returns>
         [SwaggerGroup(TestGrouping.Common)]
         [HttpPost]
-        public async Task<Test> RunAllAsync()
+        public async Task<Test> TopLevelAllTestsAsync()
         {
-            var root = await _testLogic.CreateRootAsync("All");
-            try
-            {
-                var testables = AppDomain.CurrentDomain.GetAssemblies()
-                    .SelectMany(x => x.GetTypes())
-                    .Where(x => typeof(ITopLevel).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
-                    .Select(x =>
-                    {
-                        var instance = (ITestable)Activator.CreateInstance(x, _testLogic); // TODO: Not so nice
-                        return instance;
-                    })
-                    .ToList();
-
-                await RunTestables(root, testables);
-            }
-            catch (Exception e)
-            {
-                await _testLogic.SetStateAsync(root, StateEnum.Failed, e.Message);
-            }
+            var root = await TestLogic.CreateRootAsync("All");
+            await RunTestablesSkippingRunAllAsync(root, new List<ControllerBase> { this });
 
             return root;
         }
 
-        private async Task RunTestables(Test root, List<ITestable> testables)
+        /// <summary>
+        /// Run all Capability contract tests
+        /// </summary>
+        /// <param name="parent">The parent test. You would almost certainly set this to null.</param>
+        [SwaggerGroup(TestGrouping.Common)]
+        [HttpPost("AllCapabilityContractTests")]
+        public async Task<Test> CapabilityContractTests(Test parent = null)
         {
-            foreach (var testable in testables)
-            {
-                await testable.RunAllAsync(root);
-            }
+            return await RunTopLevelTestAsync(parent, TestGrouping.CapabilityContractTests);
         }
 
+        /// <summary>
+        /// Run all Configuration tests
+        /// </summary>
+        /// <param name="parent">The parent test. You would almost certainly set this to null.</param>
         [SwaggerGroup(TestGrouping.Common)]
-        [HttpGet("{id}")]
-        public async Task<Test> Get(Guid id)
+        [HttpPost("AllConfigurationTests")]
+        public async Task<Test> ConfigurationTests(Test parent = null)
         {
-            var test = await _testLogic.GetAsync(id.ToString());
-            if (test == null) throw new FulcrumNotFoundException(id.ToString());
-            return test;
+            return await RunTopLevelTestAsync(parent, TestGrouping.ConfigurationTests);
+        }
+
+        private async Task<Test> RunTopLevelTestAsync(Test parent, string group)
+        {
+            var container = await TestLogic.CreateAsync(group, parent);
+
+            try
+            {
+                var testables = FindTestables(group);
+                await RunTestablesOnlyRunAllAsync(container, testables);
+            }
+            catch (Exception e)
+            {
+                await TestLogic.SetStateAsync(container, StateEnum.Failed, e.Message);
+            }
+
+            return container;
         }
     }
 }

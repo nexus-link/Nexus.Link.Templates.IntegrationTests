@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Service</name>
+    </assembly>
+    <members>
+        <member name="T:Service.ContractTests.Capability1.Capability1CallbackController">
+             <summary>
+             Represents a test strategy where the Platform Integration Test Service is a subscriber of events.
+            
+             (The other strategy is for the adapters to use the Platform Integration Test Service
+             as their "Integration Api" which they use to send events, which are then intercepted)
+             </summary>
+        </member>
+        <member name="M:Service.Controllers.AllTestsController.TopLevelAllTestsAsync">
+            <summary>
+            Run ALL tests.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Service.Controllers.AllTestsController.CapabilityContractTests(SharedKernel.Test)">
+            <summary>
+            Run all Capability contract tests
+            </summary>
+            <param name="parent">The parent test. You would almost certainly set this to null.</param>
+        </member>
+        <member name="M:Service.Controllers.AllTestsController.ConfigurationTests(SharedKernel.Test)">
+            <summary>
+            Run all Configuration tests
+            </summary>
+            <param name="parent">The parent test. You would almost certainly set this to null.</param>
+        </member>
+        <member name="P:Service.NexusSettings.ApplicationName">
+            <summary></summary>
+        </member>
+        <member name="P:Service.NexusSettings.Organization">
+            <summary></summary>
+        </member>
+        <member name="P:Service.NexusSettings.Environment">
+            <summary></summary>
+        </member>
+        <member name="P:Service.NexusSettings.RunTimeLevel">
+            <summary></summary>
+        </member>
+        <member name="P:Service.NexusSettings.PublicKey">
+            <summary></summary>
+        </member>
+    </members>
+</doc>

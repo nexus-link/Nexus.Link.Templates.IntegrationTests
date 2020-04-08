@@ -7,6 +7,9 @@ using Service.Mapping;
 
 namespace Service.BackgroundTasks
 {
+    /// <summary>
+    /// Cron job for deleting old tests
+    /// </summary>
     public class PurgeJob : IHostedService, IDisposable
     {
         private readonly ITestLogic _testLogic;
@@ -16,12 +19,14 @@ namespace Service.BackgroundTasks
         private static readonly TimeSpan PurgeInterval = TimeSpan.FromDays(1);
         private static readonly TimeSpan MaxAge = TimeSpan.FromDays(7);
 
+        /// <summary></summary>
         public PurgeJob(ITestLogic testLogic, ILogger<PurgeJob> logger)
         {
             _testLogic = testLogic;
             _logger = logger;
         }
 
+        /// <summary></summary>
         public Task StartAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Purge job starting.");
@@ -47,6 +52,7 @@ namespace Service.BackgroundTasks
             }
         }
 
+        /// <summary></summary>
         public Task StopAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Purge job stopping.");
@@ -56,6 +62,7 @@ namespace Service.BackgroundTasks
             return Task.CompletedTask;
         }
 
+        /// <summary></summary>
         public void Dispose()
         {
             _timer?.Dispose();

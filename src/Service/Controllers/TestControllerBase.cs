@@ -11,17 +11,20 @@ using SharedKernel;
 
 namespace Service.Controllers
 {
+    /// <summary></summary>
     public abstract class TestControllerBase : ControllerBase
     {
-
+        /// <summary></summary>
         protected readonly ITestLogic TestLogic;
 
+        /// <summary></summary>
         protected TestControllerBase(ITestLogic testLogic)
         {
             TestLogic = testLogic;
         }
 
-        protected List<ITestable> FindTestables(string group)
+        /// <summary></summary>
+        protected List<ControllerBase> FindTestables(string group)
         {
             var testables = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypes())
@@ -32,22 +35,25 @@ namespace Service.Controllers
                     return instance;
                 })
                 .Where(x => x.Group == group)
+                .Select(x => (ControllerBase)x)
                 .ToList();
 
             return testables;
         }
 
-        protected async Task RunTestablesSkippingRunAllAsync(Test container, List<ITestable> testables)
+        /// <summary></summary>
+        protected async Task RunTestablesSkippingRunAllAsync(Test container, List<ControllerBase> testables)
         {
             await RunTestablesOnlyRunAllAsync(container, testables, false);
         }
 
-        protected async Task RunTestablesOnlyRunAllAsync(Test container, List<ITestable> testables)
+        /// <summary></summary>
+        protected async Task RunTestablesOnlyRunAllAsync(Test container, List<ControllerBase> testables)
         {
             await RunTestablesOnlyRunAllAsync(container, testables, true);
         }
 
-        private async Task RunTestablesOnlyRunAllAsync(Test container, List<ITestable> testables, bool runAll)
+        private async Task RunTestablesOnlyRunAllAsync(Test container, List<ControllerBase> testables, bool runAll)
         {
             foreach (var testable in testables)
             {
@@ -59,7 +65,8 @@ namespace Service.Controllers
                         var hideInSwagger = testMethod.GetCustomAttribute<ApiExplorerSettingsAttribute>();
                         return group != null && hideInSwagger == null &&
                                 ((runAll && testMethod.Name == nameof(ITestable.RunAllAsync)) ||
-                                (!runAll && testMethod.Name != nameof(ITestable.RunAllAsync)));
+                                (!runAll && testMethod.Name != nameof(ITestable.RunAllAsync))) &&
+                                testMethod.Name != "TopLevelAllTestsAsync"; // Special for preventing loops in AllTestsController
                     })
                     .ToList();
 

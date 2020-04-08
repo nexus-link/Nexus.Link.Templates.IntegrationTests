@@ -6,6 +6,7 @@ using Service.Controllers;
 using Service.Mapping;
 using Service.Models;
 using SharedKernel;
+#pragma warning disable 1591
 
 namespace Service.ContractTests.Capability2
 {
@@ -20,20 +21,20 @@ namespace Service.ContractTests.Capability2
             _testLogic = testLogic;
         }
 
-        public string Group => TestGrouping.ContractTests;
+        public string Group => TestGrouping.CapabilityContractTests;
 
-        [SwaggerGroup(TestGrouping.ContractTests)]
+        [SwaggerGroup(TestGrouping.CapabilityContractTests)]
         [HttpPost("All")]
         public async Task<Test> RunAllAsync(Test parent = null)
         {
             var container = await _testLogic.CreateAsync("Capability 2 contract tests", parent);
 
-            await RunTestablesSkippingRunAllAsync(container, new List<ITestable> { this });
+            await RunTestablesSkippingRunAllAsync(container, new List<ControllerBase> { this });
 
             return container;
         }
 
-        [SwaggerGroup(TestGrouping.ContractTests)]
+        [SwaggerGroup(TestGrouping.CapabilityContractTests)]
         [HttpPost("Test1")]
         public async Task<Test> Test1(Test parent)
         {
@@ -45,7 +46,7 @@ namespace Service.ContractTests.Capability2
             return test;
         }
 
-        [SwaggerGroup(TestGrouping.ContractTests)]
+        [SwaggerGroup(TestGrouping.CapabilityContractTests)]
         [HttpPost("Test2")]
         public async Task<Test> Test2(Test parent)
         {
