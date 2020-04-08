@@ -30,11 +30,12 @@ namespace Service.Mapping
         /// <inheritdoc />
         public async Task<Test> CreateAsync(string name, Test parent)
         {
-            if (parent == null)
+            if (!Guid.TryParse(parent?.Id, out _))
             {
                 return await CreateRootAsync(name);
             }
 
+            // ReSharper disable once PossibleNullReferenceException
             var storageTest = await _storage.TestStorage.CreateAsync(name, Guid.Parse(parent.Id));
 
             var test = await ToTestRecursive(storageTest);
