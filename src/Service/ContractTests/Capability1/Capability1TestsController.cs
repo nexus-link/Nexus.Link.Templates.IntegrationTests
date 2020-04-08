@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
+using Nexus.Link.Libraries.Web.RestClientHelper;
 using Service.ContractTests.Mocks;
 using Service.Controllers;
 using Service.Mapping;
@@ -19,10 +21,14 @@ namespace Service.ContractTests.Capability1
     public class Capability1TestsController : TestControllerBase, ITestable
     {
         private readonly ITestLogic _testLogic;
+        private readonly Capability1RestClient _restclient;
 
-        public Capability1TestsController(ITestLogic testLogic) : base(testLogic)
+        public Capability1TestsController(IConfiguration configuration, ITestLogic testLogic) : base(testLogic)
         {
             _testLogic = testLogic;
+
+            var baseUri = $"{configuration["BaseUrl"]}/Capability1Mocks/api/v1/PersonManagement";
+            _restclient = new Capability1RestClient(new HttpSender(baseUri));
         }
 
         public string Group => TestGrouping.CapabilityContractTests;
@@ -45,8 +51,9 @@ namespace Service.ContractTests.Capability1
             var test = await _testLogic.CreateAsync("Capability 1 Test 1 (event)", parent);
 
             FulcrumApplication.Context.CorrelationId = test.Id;
-            // TODO: "Do call to capability and expect an event to be sent"
 
+            // TODO: create entity in mock; mock publishes event via IntegrationTests service; intercept; set state
+            // TODO: RestClient
 
             return test;
         }
@@ -64,13 +71,8 @@ namespace Service.ContractTests.Capability1
 
             try
             {
-                using var httpClient = new HttpClient();
-                
                 // Create
-                var url = $"{Request.Scheme}://{Request.Host}/Capability1Mocks/api/v1/PersonManagement/Persons";
-                var response = await httpClient.PostAsJsonAsync(url, new MockPerson { Name = "Raginaharjar" });
-                var result = await response.Content.ReadAsStringAsync();
-                var person = System.Text.Json.JsonSerializer.Deserialize<MockPerson>(result);
+                var person = await _restclient.CreatePerson(new MockPerson {Name = "Raginaharjar"});
                 if (person?.Id == null) throw new Exception("No Person was created");
                 var personId = person.Id;
 
@@ -78,18 +80,14 @@ namespace Service.ContractTests.Capability1
                 await _testLogic.UpdateAsync(test);
 
                 // Read
-                person = await GetMockPerson(personId, httpClient);
+                person = await _restclient.GetPerson(personId);
                 if (person?.Id == null) throw new Exception($"Person {personId} could not be found");
 
                 // TODO: Update
 
                 // Delete
-                var idUrl = $"{Request.Scheme}://{Request.Host}/Capability1Mocks/api/v1/PersonManagement/Persons/{personId}";
-                response = await httpClient.DeleteAsync(idUrl);
-                if (!response.IsSuccessStatusCode) throw new Exception($"Could not delete Person {personId}");
-
-                // Deleted
-                person = await GetMockPerson(personId, httpClient);
+                await _restclient.DeletePerson(personId);
+                person = await _restclient.GetPerson(personId);
                 if (person != null) throw new Exception($"Person {personId} should be deleted");
 
                 // All ok!
@@ -102,16 +100,6 @@ namespace Service.ContractTests.Capability1
 
 
             return test;
-        }
-
-        private async Task<MockPerson> GetMockPerson(string personId, HttpClient httpClient)
-        {
-            var idUrl = $"{Request.Scheme}://{Request.Host}/Capability1Mocks/api/v1/PersonManagement/Persons/{personId}";
-            var response = await httpClient.GetAsync(idUrl);
-            if (!response.IsSuccessStatusCode) return null;
-            var result = await response.Content.ReadAsStringAsync();
-            var person = System.Text.Json.JsonSerializer.Deserialize<MockPerson>(result);
-            return person;
         }
     }
 }
