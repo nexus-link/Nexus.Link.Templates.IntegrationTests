@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
+using Service.ContractTests.Mocks;
 using Service.Controllers;
 using Service.Mapping;
 using Service.Models;
@@ -49,15 +53,39 @@ namespace Service.ContractTests.Capability1
         }
 
         [SwaggerGroup(TestGrouping.CapabilityContractTests)]
-        [HttpPost("Test2")]
-        public async Task<Test> Test2(Test parent)
+        [HttpPost("CreatePerson")]
+        public async Task<Test> CreatePerson(Test parent)
         {
-            var test = await _testLogic.CreateAsync("Capability 1 Test 2", parent);
+            var test = await _testLogic.CreateAsync("CreatePerson", parent);
 
-            // TODO: Do test and update state
-            test.Properties = new Dictionary<string, object> { { "x", "y" }, { "apa", new { Type = "great-ape", Name = "Gorilla", Id = 23 } } };
-            await _testLogic.UpdateAsync(test);
-            await _testLogic.SetStateAsync(test, StateEnum.Ok, "ok");
+            try
+            {
+                using var httpClient = new HttpClient();
+                
+                var url = $"{Request.Scheme}://{Request.Host}/Capability1Mocks/api/v1/PersonManagement/Persons";
+                var response = await httpClient.PostAsJsonAsync(url, new MockPerson { Name = "Raginaharjar" });
+                var result = await response.Content.ReadAsStringAsync();
+                var person = System.Text.Json.JsonSerializer.Deserialize<MockPerson>(result);
+                if (person?.Id == null) throw new Exception("No Person was created");
+
+                var personId = person.Id;
+                url = $"{Request.Scheme}://{Request.Host}/Capability1Mocks/api/v1/PersonManagement/Persons/{personId}";
+                response = await httpClient.GetAsync(url);
+                result = await response.Content.ReadAsStringAsync();
+                person = System.Text.Json.JsonSerializer.Deserialize<MockPerson>(result);
+                if (person?.Id == null) throw new Exception($"Person {personId} could not be found");
+
+                await _testLogic.SetStateAsync(test, StateEnum.Ok, "ok");
+
+                test.Properties = new Dictionary<string, object> { { "Person", person } };
+                await _testLogic.UpdateAsync(test);
+
+            }
+            catch (Exception e)
+            {
+                await _testLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
+            }
+
 
             return test;
         }

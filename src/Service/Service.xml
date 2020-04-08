@@ -4,6 +4,23 @@
         <name>Service</name>
     </assembly>
     <members>
+        <member name="T:Service.BackgroundTasks.PurgeJob">
+            <summary>
+            Cron job for deleting old tests
+            </summary>
+        </member>
+        <member name="M:Service.BackgroundTasks.PurgeJob.#ctor(Service.Mapping.ITestLogic,Microsoft.Extensions.Logging.ILogger{Service.BackgroundTasks.PurgeJob})">
+            <summary></summary>
+        </member>
+        <member name="M:Service.BackgroundTasks.PurgeJob.StartAsync(System.Threading.CancellationToken)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.BackgroundTasks.PurgeJob.StopAsync(System.Threading.CancellationToken)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.BackgroundTasks.PurgeJob.Dispose">
+            <summary></summary>
+        </member>
         <member name="T:Service.ContractTests.Capability1.Capability1CallbackController">
              <summary>
              Represents a test strategy where the Platform Integration Test Service is a subscriber of events.
@@ -11,6 +28,22 @@
              (The other strategy is for the adapters to use the Platform Integration Test Service
              as their "Integration Api" which they use to send events, which are then intercepted)
              </summary>
+        </member>
+        <member name="T:Service.ContractTests.Mocks.Capability1MocksController">
+            <summary>
+            Used for mocking capability providers.
+            </summary>
+            <remarks>
+            Only single instance support.
+            </remarks>
+        </member>
+        <member name="T:Service.Controllers.AllTestsController">
+            <summary>
+            Convenience for running all tests in different categories.
+            </summary>
+        </member>
+        <member name="M:Service.Controllers.AllTestsController.#ctor(Service.Mapping.ITestLogic)">
+            <summary></summary>
         </member>
         <member name="M:Service.Controllers.AllTestsController.TopLevelAllTestsAsync">
             <summary>
@@ -30,6 +63,116 @@
             </summary>
             <param name="parent">The parent test. You would almost certainly set this to null.</param>
         </member>
+        <member name="T:Service.Controllers.TestControllerBase">
+            <summary></summary>
+        </member>
+        <member name="F:Service.Controllers.TestControllerBase.TestLogic">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Controllers.TestControllerBase.#ctor(Service.Mapping.ITestLogic)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Controllers.TestControllerBase.FindTestables(System.String)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Controllers.TestControllerBase.RunTestablesSkippingRunAllAsync(SharedKernel.Test,System.Collections.Generic.List{Microsoft.AspNetCore.Mvc.ControllerBase})">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Controllers.TestControllerBase.RunTestablesOnlyRunAllAsync(SharedKernel.Test,System.Collections.Generic.List{Microsoft.AspNetCore.Mvc.ControllerBase})">
+            <summary></summary>
+        </member>
+        <member name="T:Service.Controllers.TestsController">
+            <summary>
+            Methods regarding specific instances of tests
+            </summary>
+        </member>
+        <member name="M:Service.Controllers.TestsController.#ctor(Service.Mapping.ITestLogic)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Controllers.TestsController.Get(System.Guid)">
+            <summary>
+            Get a test by id
+            </summary>
+        </member>
+        <member name="T:Service.Mapping.TestLogic">
+            <summary>
+            Maps models from outside world to storage world
+            </summary>
+        </member>
+        <member name="M:Service.Mapping.TestLogic.#ctor(SharedKernel.IStorage)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Mapping.TestLogic.CreateRootAsync(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Mapping.TestLogic.CreateAsync(System.String,SharedKernel.Test)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Mapping.TestLogic.SetStateAsync(SharedKernel.Test,SharedKernel.StateEnum,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Mapping.TestLogic.UpdateAsync(SharedKernel.Test)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Mapping.TestLogic.GetAsync(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Mapping.TestLogic.PurgeAsync(System.TimeSpan)">
+            <inheritdoc />
+        </member>
+        <member name="T:Service.Mapping.ITestLogic">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Mapping.ITestLogic.CreateRootAsync(System.String)">
+            <summary>
+            Create a test without parent
+            </summary>
+        </member>
+        <member name="M:Service.Mapping.ITestLogic.CreateAsync(System.String,SharedKernel.Test)">
+            <summary>
+            Create a test (with a parent)
+            </summary>
+        </member>
+        <member name="M:Service.Mapping.ITestLogic.SetStateAsync(SharedKernel.Test,SharedKernel.StateEnum,System.String)">
+            <summary>
+            Set the state of a test
+            </summary>
+        </member>
+        <member name="M:Service.Mapping.ITestLogic.UpdateAsync(SharedKernel.Test)">
+            <summary>
+            Save a state to storage
+            </summary>
+        </member>
+        <member name="M:Service.Mapping.ITestLogic.GetAsync(System.String)">
+            <summary>
+            Get a test by id
+            </summary>
+        </member>
+        <member name="M:Service.Mapping.ITestLogic.PurgeAsync(System.TimeSpan)">
+            <summary>
+            Remove all tests older than a time span
+            </summary>
+        </member>
+        <member name="T:Service.Models.ITestable">
+            <summary>
+            A class (Controller) that has some tests
+            </summary>
+        </member>
+        <member name="P:Service.Models.ITestable.Group">
+            <summary>
+            What test grouping it belongs to. See <see cref="T:Service.TestGrouping"/>.
+            </summary>
+        </member>
+        <member name="M:Service.Models.ITestable.RunAllAsync(SharedKernel.Test)">
+            <summary>
+            Run all tests and return a container test that wraps them.
+            </summary>
+            <param name="parent">The parent test (if any)</param>
+            <returns>A test that wraps all other tests</returns>
+        </member>
+        <member name="T:Service.NexusSettings">
+            <summary></summary>
+        </member>
         <member name="P:Service.NexusSettings.ApplicationName">
             <summary></summary>
         </member>
@@ -43,6 +186,53 @@
             <summary></summary>
         </member>
         <member name="P:Service.NexusSettings.PublicKey">
+            <summary></summary>
+        </member>
+        <member name="T:Service.Program">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Program.Main(System.String[])">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Program.CreateHostBuilder(System.String[])">
+            <summary></summary>
+        </member>
+        <member name="T:Service.Startup">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Startup.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Startup.Configuration">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Startup.HostEnvironment">
+            <summary></summary>
+        </member>
+        <member name="F:Service.Startup.ApiName">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Startup.ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
+            <summary></summary>
+        </member>
+        <member name="T:Service.TestGrouping">
+            <summary>
+            The different types of tests this service provides
+            </summary>
+        </member>
+        <member name="F:Service.TestGrouping.Common">
+            <summary></summary>
+        </member>
+        <member name="F:Service.TestGrouping.CapabilityContractTests">
+            <summary></summary>
+        </member>
+        <member name="F:Service.TestGrouping.ConfigurationTests">
+            <summary></summary>
+        </member>
+        <member name="F:Service.TestGrouping.BusinessProcessesTests">
             <summary></summary>
         </member>
     </members>
