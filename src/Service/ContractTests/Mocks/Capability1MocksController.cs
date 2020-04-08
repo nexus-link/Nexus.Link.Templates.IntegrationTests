@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Mvc;
+using Nexus.Link.Libraries.Core.Error.Logic;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 #pragma warning disable 1591
 
@@ -32,7 +33,16 @@ namespace Service.ContractTests.Mocks
         [HttpGet("Persons/{id}")]
         public dynamic GetPersonById(string id)
         {
+            if (!EntityStorage.ContainsKey(id)) throw new FulcrumNotFoundException();
             return EntityStorage[id];
+        }
+
+        [SwaggerGroup("Mocks")]
+        [HttpDelete("Persons/{id}")]
+        public void DeletePersonById(string id)
+        {
+            if (!EntityStorage.ContainsKey(id)) throw new FulcrumNotFoundException();
+            EntityStorage.TryRemove(id, out _);
         }
     }
 

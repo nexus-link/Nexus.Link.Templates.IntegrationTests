@@ -29,6 +29,13 @@
              as their "Integration Api" which they use to send events, which are then intercepted)
              </summary>
         </member>
+        <member name="M:Service.ContractTests.Capability1.Capability1TestsController.CreatePerson(SharedKernel.Test)">
+            <summary>
+            EXAMPLE: CRUD person entity
+            </summary>
+            <param name="parent"></param>
+            <returns></returns>
+        </member>
         <member name="T:Service.ContractTests.Mocks.Capability1MocksController">
             <summary>
             Used for mocking capability providers.
