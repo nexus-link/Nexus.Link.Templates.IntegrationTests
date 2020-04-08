@@ -15,7 +15,7 @@ namespace Service.ContractTests.Capability1
 
         public async Task<MockPerson> CreatePerson(MockPerson person)
         {
-            var relativeUrl = "Persons";
+            var relativeUrl = "PersonManagement/Persons";
             try
             {
                 person = await PostAndReturnCreatedObjectAsync(relativeUrl, person);
@@ -29,7 +29,7 @@ namespace Service.ContractTests.Capability1
 
         public async Task<MockPerson> GetPerson(string id)
         {
-            var relativeUrl = $"Persons/{id}";
+            var relativeUrl = $"PersonManagement/Persons/{id}";
             try
             {
                 var person = await GetAsync<MockPerson>(relativeUrl);
@@ -42,8 +42,22 @@ namespace Service.ContractTests.Capability1
         }
         public async Task DeletePerson(string id)
         {
-            var relativeUrl = $"Persons/{id}";
+            var relativeUrl = $"PersonManagement/Persons/{id}";
             await DeleteAsync(relativeUrl);
+        }
+
+        public async Task<MockOrder> CreateOrder(MockOrder mockOrder)
+        {
+            var relativeUrl = "OrderManagement/Orders";
+            try
+            {
+                mockOrder = await PostAndReturnCreatedObjectAsync(relativeUrl, mockOrder);
+                return mockOrder;
+            }
+            catch (FulcrumNotFoundException)
+            {
+                return null;
+            }
         }
     }
 }

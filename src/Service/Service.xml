@@ -29,12 +29,15 @@
              as their "Integration Api" which they use to send events, which are then intercepted)
              </summary>
         </member>
+        <member name="M:Service.ContractTests.Capability1.Capability1TestsController.OrderCreatedEvent(SharedKernel.Test)">
+            <summary>
+            EXAMPLE: Trigger event by creating entity
+            </summary>
+        </member>
         <member name="M:Service.ContractTests.Capability1.Capability1TestsController.CreatePerson(SharedKernel.Test)">
             <summary>
             EXAMPLE: CRUD person entity
             </summary>
-            <param name="parent"></param>
-            <returns></returns>
         </member>
         <member name="T:Service.ContractTests.Mocks.Capability1MocksController">
             <summary>
@@ -69,6 +72,21 @@
             Run all Configuration tests
             </summary>
             <param name="parent">The parent test. You would almost certainly set this to null.</param>
+        </member>
+        <member name="T:Service.Controllers.IntegrationApiController">
+             <summary>
+             Fulfills the exact same contract as the integration part of the business api (Event sending, Authentication, etc.)
+            
+             Used to intercept events in the Capability contract tests
+             </summary>
+        </member>
+        <member name="M:Service.Controllers.IntegrationApiController.#ctor(Service.Mapping.ITestLogic)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Controllers.IntegrationApiController.Publish(System.String,System.String,System.Int32,System.Int32,System.Object)">
+            <summary>
+            Mocks publishing an event
+            </summary>
         </member>
         <member name="T:Service.Controllers.TestControllerBase">
             <summary></summary>

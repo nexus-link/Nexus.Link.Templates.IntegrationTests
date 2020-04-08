@@ -27,7 +27,7 @@ namespace Service.ContractTests.Capability1
         {
             _testLogic = testLogic;
 
-            var baseUri = $"{configuration["BaseUrl"]}/Capability1Mocks/api/v1/PersonManagement";
+            var baseUri = $"{configuration["BaseUrl"]}/Capability1Mocks/api/v1";
             _restclient = new Capability1RestClient(new HttpSender(baseUri));
         }
 
@@ -44,16 +44,35 @@ namespace Service.ContractTests.Capability1
             return container;
         }
 
+        /// <summary>
+        /// EXAMPLE: Trigger event by creating entity
+        /// </summary>
         [SwaggerGroup(TestGrouping.CapabilityContractTests)]
-        [HttpPost("Test1")]
-        public async Task<Test> Test1(Test parent)
+        [HttpPost("OrderCreatedEvent")]
+        public async Task<Test> OrderCreatedEvent(Test parent)
         {
-            var test = await _testLogic.CreateAsync("Capability 1 Test 1 (event)", parent);
+            var test = await _testLogic.CreateAsync("OrderCreatedEvent", parent);
+            var createTest = await _testLogic.CreateAsync("Create", test);
+            var eventTest = await _testLogic.CreateAsync("Event", test);
 
-            FulcrumApplication.Context.CorrelationId = test.Id;
+            try
+            {
+                FulcrumApplication.Context.CorrelationId = eventTest.Id;
 
-            // TODO: create entity in mock; mock publishes event via IntegrationTests service; intercept; set state
-            // TODO: RestClient
+                var order = await _restclient.CreateOrder(new MockOrder { Id = "1", Items = 3 });
+                if (order?.Id == null) throw new Exception("No Order was created");
+
+                createTest.Properties = new Dictionary<string, object> { { "Order", order } };
+                await _testLogic.UpdateAsync(createTest);
+                await _testLogic.SetStateAsync(createTest, StateEnum.Ok, "Order created");
+
+            }
+            catch (Exception e)
+            {
+                await _testLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
+            }
+
+            // Note! We leave the state as Waiting and set to Ok once the event is intercepted in IntegrationApiController
 
             return test;
         }
@@ -61,8 +80,6 @@ namespace Service.ContractTests.Capability1
         /// <summary>
         /// EXAMPLE: CRUD person entity
         /// </summary>
-        /// <param name="parent"></param>
-        /// <returns></returns>
         [SwaggerGroup(TestGrouping.CapabilityContractTests)]
         [HttpPost("CrudPerson")]
         public async Task<Test> CreatePerson(Test parent)
