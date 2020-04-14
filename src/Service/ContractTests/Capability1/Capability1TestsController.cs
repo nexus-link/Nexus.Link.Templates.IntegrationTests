@@ -9,7 +9,7 @@ using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Nexus.Link.Libraries.Web.RestClientHelper;
 using Service.ContractTests.Mocks;
 using Service.Controllers;
-using Service.Mapping;
+using Service.Logic;
 using Service.Models;
 using SharedKernel;
 #pragma warning disable 1591

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Nexus.Link.Libraries.Web.AspNet.Pipe.Inbound;
-using Service.Mapping;
+using Service.Logic;
 using SharedKernel;
 using Swashbuckle.AspNetCore.SwaggerGen;
 

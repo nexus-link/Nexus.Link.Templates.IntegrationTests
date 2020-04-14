@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SharedKernel;
 
-namespace Service.Mapping
+namespace Service.Logic
 {
     /// <summary>
     /// Maps models from outside world to storage world

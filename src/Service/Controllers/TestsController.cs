@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nexus.Link.Libraries.Core.Error.Logic;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
-using Service.Mapping;
+using Service.Logic;
 using SharedKernel;
 
 namespace Service.Controllers

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Service.Controllers;
-using Service.Mapping;
+using Service.Logic;
 using Service.Models;
 using SharedKernel;
 #pragma warning disable 1591

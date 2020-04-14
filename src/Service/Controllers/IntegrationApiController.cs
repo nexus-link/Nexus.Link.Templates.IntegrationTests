@@ -1,9 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Nexus.Link.BusinessEvents.Sdk;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Core.Assert;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
-using Service.Mapping;
+using Service.Logic;
 using SharedKernel;
 
 namespace Service.Controllers
@@ -19,11 +21,15 @@ namespace Service.Controllers
     {
 
         private readonly ITestLogic _testLogic;
+        private readonly Nexus.Link.BusinessEvents.Sdk.IBusinessEvents _businessEventsClients;
 
         /// <summary></summary>
-        public IntegrationApiController(ITestLogic testLogic)
+        public IntegrationApiController(IConfiguration configuration, ITestLogic testLogic)
         {
             _testLogic = testLogic;
+
+            //var nexusSettings = configuration.GetSection("Nexus");
+            //_businessEventsClients = new BusinessEvents(nexusSettings["BusinessEventsUrl"], );
         }
 
 

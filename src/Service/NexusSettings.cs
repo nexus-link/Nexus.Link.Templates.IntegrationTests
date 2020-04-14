@@ -19,12 +19,15 @@
         public string PublicKey { get; set; }
 
         /// <summary></summary>
-        public string AuthenticationEndpoint { get; set; }
+        public string AuthenticationUrl { get; set; }
 
         /// <summary></summary>
         public string ClientId { get; set; }
 
         /// <summary></summary>
         public string ClientSecret { get; set; }
+
+        /// <summary></summary>
+        public string BusinessEventsUrl { get; set; }
     }
 }

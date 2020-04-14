@@ -5,7 +5,7 @@ using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Core.Logging;
 using Service.ContractTests.Capability1.Models;
 using Service.Controllers;
-using Service.Mapping;
+using Service.Logic;
 using SharedKernel;
 #pragma warning disable 1591
 
