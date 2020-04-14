@@ -9,7 +9,7 @@
             Cron job for deleting old tests
             </summary>
         </member>
-        <member name="M:Service.BackgroundTasks.PurgeJob.#ctor(Service.Mapping.ITestLogic,Microsoft.Extensions.Logging.ILogger{Service.BackgroundTasks.PurgeJob})">
+        <member name="M:Service.BackgroundTasks.PurgeJob.#ctor(Service.Logic.ITestLogic,Microsoft.Extensions.Logging.ILogger{Service.BackgroundTasks.PurgeJob})">
             <summary></summary>
         </member>
         <member name="M:Service.BackgroundTasks.PurgeJob.StartAsync(System.Threading.CancellationToken)">
@@ -52,7 +52,7 @@
             Convenience for running all tests in different categories.
             </summary>
         </member>
-        <member name="M:Service.Controllers.AllTestsController.#ctor(Service.Mapping.ITestLogic)">
+        <member name="M:Service.Controllers.AllTestsController.#ctor(Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
         <member name="M:Service.Controllers.AllTestsController.TopLevelAllTestsAsync">
@@ -80,7 +80,7 @@
              Used to intercept events in the Capability contract tests
              </summary>
         </member>
-        <member name="M:Service.Controllers.IntegrationApiController.#ctor(Service.Mapping.ITestLogic)">
+        <member name="M:Service.Controllers.IntegrationApiController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
         <member name="M:Service.Controllers.IntegrationApiController.Publish(System.String,System.String,System.Int32,System.Int32,System.Object)">
@@ -94,7 +94,7 @@
         <member name="F:Service.Controllers.TestControllerBase.TestLogic">
             <summary></summary>
         </member>
-        <member name="M:Service.Controllers.TestControllerBase.#ctor(Service.Mapping.ITestLogic)">
+        <member name="M:Service.Controllers.TestControllerBase.#ctor(Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
         <member name="M:Service.Controllers.TestControllerBase.FindTestables(System.String)">
@@ -111,7 +111,7 @@
             Methods regarding specific instances of tests
             </summary>
         </member>
-        <member name="M:Service.Controllers.TestsController.#ctor(Service.Mapping.ITestLogic)">
+        <member name="M:Service.Controllers.TestsController.#ctor(Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
         <member name="M:Service.Controllers.TestsController.Get(System.Guid)">
@@ -119,61 +119,67 @@
             Get a test by id
             </summary>
         </member>
-        <member name="T:Service.Mapping.TestLogic">
+        <member name="T:Service.Logic.ConfigurationHelper">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Logic.ConfigurationHelper.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary></summary>
+        </member>
+        <member name="T:Service.Logic.TestLogic">
             <summary>
             Maps models from outside world to storage world
             </summary>
         </member>
-        <member name="M:Service.Mapping.TestLogic.#ctor(SharedKernel.IStorage)">
+        <member name="M:Service.Logic.TestLogic.#ctor(SharedKernel.IStorage)">
             <summary></summary>
         </member>
-        <member name="M:Service.Mapping.TestLogic.CreateRootAsync(System.String)">
+        <member name="M:Service.Logic.TestLogic.CreateRootAsync(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Service.Mapping.TestLogic.CreateAsync(System.String,SharedKernel.Test)">
+        <member name="M:Service.Logic.TestLogic.CreateAsync(System.String,SharedKernel.Test)">
             <inheritdoc />
         </member>
-        <member name="M:Service.Mapping.TestLogic.SetStateAsync(SharedKernel.Test,SharedKernel.StateEnum,System.String)">
+        <member name="M:Service.Logic.TestLogic.SetStateAsync(SharedKernel.Test,SharedKernel.StateEnum,System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Service.Mapping.TestLogic.UpdateAsync(SharedKernel.Test)">
+        <member name="M:Service.Logic.TestLogic.UpdateAsync(SharedKernel.Test)">
             <inheritdoc />
         </member>
-        <member name="M:Service.Mapping.TestLogic.GetAsync(System.String)">
+        <member name="M:Service.Logic.TestLogic.GetAsync(System.String)">
             <inheritdoc />
         </member>
-        <member name="M:Service.Mapping.TestLogic.PurgeAsync(System.TimeSpan)">
+        <member name="M:Service.Logic.TestLogic.PurgeAsync(System.TimeSpan)">
             <inheritdoc />
         </member>
-        <member name="T:Service.Mapping.ITestLogic">
+        <member name="T:Service.Logic.ITestLogic">
             <summary></summary>
         </member>
-        <member name="M:Service.Mapping.ITestLogic.CreateRootAsync(System.String)">
+        <member name="M:Service.Logic.ITestLogic.CreateRootAsync(System.String)">
             <summary>
             Create a test without parent
             </summary>
         </member>
-        <member name="M:Service.Mapping.ITestLogic.CreateAsync(System.String,SharedKernel.Test)">
+        <member name="M:Service.Logic.ITestLogic.CreateAsync(System.String,SharedKernel.Test)">
             <summary>
             Create a test (with a parent)
             </summary>
         </member>
-        <member name="M:Service.Mapping.ITestLogic.SetStateAsync(SharedKernel.Test,SharedKernel.StateEnum,System.String)">
+        <member name="M:Service.Logic.ITestLogic.SetStateAsync(SharedKernel.Test,SharedKernel.StateEnum,System.String)">
             <summary>
             Set the state of a test
             </summary>
         </member>
-        <member name="M:Service.Mapping.ITestLogic.UpdateAsync(SharedKernel.Test)">
+        <member name="M:Service.Logic.ITestLogic.UpdateAsync(SharedKernel.Test)">
             <summary>
             Save a state to storage
             </summary>
         </member>
-        <member name="M:Service.Mapping.ITestLogic.GetAsync(System.String)">
+        <member name="M:Service.Logic.ITestLogic.GetAsync(System.String)">
             <summary>
             Get a test by id
             </summary>
         </member>
-        <member name="M:Service.Mapping.ITestLogic.PurgeAsync(System.TimeSpan)">
+        <member name="M:Service.Logic.ITestLogic.PurgeAsync(System.TimeSpan)">
             <summary>
             Remove all tests older than a time span
             </summary>
@@ -213,13 +219,16 @@
         <member name="P:Service.NexusSettings.PublicKey">
             <summary></summary>
         </member>
-        <member name="P:Service.NexusSettings.AuthenticationEndpoint">
+        <member name="P:Service.NexusSettings.AuthenticationUrl">
             <summary></summary>
         </member>
         <member name="P:Service.NexusSettings.ClientId">
             <summary></summary>
         </member>
         <member name="P:Service.NexusSettings.ClientSecret">
+            <summary></summary>
+        </member>
+        <member name="P:Service.NexusSettings.BusinessEventsUrl">
             <summary></summary>
         </member>
         <member name="T:Service.Program">
