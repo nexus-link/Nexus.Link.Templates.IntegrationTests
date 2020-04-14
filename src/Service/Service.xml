@@ -213,6 +213,15 @@
         <member name="P:Service.NexusSettings.PublicKey">
             <summary></summary>
         </member>
+        <member name="P:Service.NexusSettings.AuthenticationEndpoint">
+            <summary></summary>
+        </member>
+        <member name="P:Service.NexusSettings.ClientId">
+            <summary></summary>
+        </member>
+        <member name="P:Service.NexusSettings.ClientSecret">
+            <summary></summary>
+        </member>
         <member name="T:Service.Program">
             <summary></summary>
         </member>

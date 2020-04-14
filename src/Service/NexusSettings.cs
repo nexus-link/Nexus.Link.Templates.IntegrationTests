@@ -17,5 +17,14 @@
 
         /// <summary></summary>
         public string PublicKey { get; set; }
+
+        /// <summary></summary>
+        public string AuthenticationEndpoint { get; set; }
+
+        /// <summary></summary>
+        public string ClientId { get; set; }
+
+        /// <summary></summary>
+        public string ClientSecret { get; set; }
     }
 }

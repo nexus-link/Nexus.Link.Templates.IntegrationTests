@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using Nexus.Link.Libraries.Web.AspNet.Pipe.Inbound;
 using Service.Mapping;
 using SharedKernel;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Service
 {

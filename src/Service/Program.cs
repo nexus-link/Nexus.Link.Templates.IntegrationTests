@@ -26,7 +26,9 @@ namespace Service
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    FulcrumApplicationHelper.WebBasicSetup(context.Configuration);
+                    var nexusSettings = context.Configuration.GetSection("Nexus");
+                    FulcrumApplicationHelper.WebBasicSetup(nexusSettings);
+
                     services.AddHostedService<PurgeJob>();
                 })
                 .ConfigureLogging((context, loggingBuilder) =>
