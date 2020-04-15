@@ -8,6 +8,8 @@
 
 <canvas id="myChart" width="400" height="400"></canvas>
 <script>
+    const SCALE_INCREMENT = 5;
+
     var ctx = document.getElementById("myChart").getContext("2d");
     var myChart = new Chart(ctx, {
         type: "horizontalBar",
@@ -40,7 +42,8 @@
                 xAxes: [{
                     ticks: {
                         beginAtZero: true,
-                        stepSize: 1
+                        stepSize: 1,
+                        suggestedMax: SCALE_INCREMENT
                     }
                 }]
             }
@@ -54,14 +57,22 @@
 
         myChart.data.labels = labels;
         myChart.data.datasets[0].data = data;
+        myChart.options.scales.xAxes[0].ticks.suggestedMax = calculateXMax(data);
         myChart.update();
     });
 
+    var calculateXMax = function(data) {
+        const copy = [...data];
+        copy.sort();
+        const maxData = copy[copy.length - 1];
+        return Math.floor(maxData / SCALE_INCREMENT) * SCALE_INCREMENT + SCALE_INCREMENT;
+    }
+
     connection.start().then(function () {
 
-    })
-    .catch(function (err) {
-        return console.error(err.toString());
-    });
+        })
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
 
 </script>
