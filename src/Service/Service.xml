@@ -85,7 +85,7 @@
         </member>
         <member name="M:Service.Controllers.IntegrationApiController.Publish(System.String,System.String,System.Int32,System.Int32,System.Object)">
             <summary>
-            Mocks publishing an event
+            Captures the event and sends it to Nexus Business Events test bench
             </summary>
         </member>
         <member name="T:Service.Controllers.TestControllerBase">
@@ -211,6 +211,9 @@
             <summary></summary>
         </member>
         <member name="P:Service.NexusSettings.Environment">
+            <summary></summary>
+        </member>
+        <member name="P:Service.NexusSettings.Tenant">
             <summary></summary>
         </member>
         <member name="P:Service.NexusSettings.RunTimeLevel">

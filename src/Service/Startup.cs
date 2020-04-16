@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Nexus.Link.Authentication.AspNet.Sdk.Handlers;
 using Nexus.Link.Libraries.Web.AspNet.Pipe.Inbound;
 using Service.Logic;
 using SharedKernel;
@@ -99,6 +100,10 @@ namespace Service
             app.UseNexusLogRequestAndResponse();
             // Convert exceptions into error responses (HTTP status codes 400 and 500)
             app.UseNexusExceptionToFulcrumResponse();
+
+            // Handles token validation and sets FulcrumApplication.Context.CallingClientName
+            var nexusSettings = Configuration.GetSection("Nexus").Get<NexusSettings>();
+            app.UseNexusTokenValidationHandler(nexusSettings.PublicKey);
 
             app.UseHttpsRedirection();
             app.UseAuthorization();

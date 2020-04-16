@@ -8,7 +8,6 @@ Based on the Nexus concept and the thoughts described here: [Platform Integratio
 * Authentication
 * Stubs for Business Api tests
 * Stubs for Business Processes tests
-* When to save calculated states?
 * Multi-environment support?
 
 ## Support for multiple instances

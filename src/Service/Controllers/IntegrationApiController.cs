@@ -1,9 +1,15 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Nexus.Link.Authentication.Sdk;
 using Nexus.Link.BusinessEvents.Sdk;
+using Nexus.Link.BusinessEvents.Sdk.RestClients.Models;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Core.Assert;
+using Nexus.Link.Libraries.Core.Platform.Authentication;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Service.Logic;
 using SharedKernel;
@@ -21,20 +27,22 @@ namespace Service.Controllers
     {
 
         private readonly ITestLogic _testLogic;
-        private readonly Nexus.Link.BusinessEvents.Sdk.IBusinessEvents _businessEventsClients;
+        private readonly IBusinessEvents _businessEventsClient;
 
         /// <summary></summary>
         public IntegrationApiController(IConfiguration configuration, ITestLogic testLogic)
         {
             _testLogic = testLogic;
 
-            //var nexusSettings = configuration.GetSection("Nexus");
-            //_businessEventsClients = new BusinessEvents(nexusSettings["BusinessEventsUrl"], );
+            var nexusSettings = configuration.GetSection("Nexus").Get<NexusSettings>();
+            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, nexusSettings.AuthenticationUrl);
+            var tokenRefresher = authManager.CreateTokenRefresher(new AuthenticationCredentials { ClientId = nexusSettings.ClientId, ClientSecret = nexusSettings.ClientSecret });
+            _businessEventsClient = new BusinessEvents(nexusSettings.BusinessEventsUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
         }
 
 
         /// <summary>
-        /// Mocks publishing an event
+        /// Captures the event and sends it to Nexus Business Events test bench
         /// </summary>
         [HttpPost]
         [Route("BusinessEvents/Publish/{entityName}/{eventName}/{major}/{minor}")]
@@ -51,9 +59,30 @@ namespace Service.Controllers
             var test = await _testLogic.GetAsync(correlationId);
             if (test != null)
             {
-                // TODO: Send event to test bench in Nexus Business Events
+                try
+                {
+                    var client = FulcrumApplication.Context.CallingClientName ?? "apa"; // TODO
+                    var payload = JObject.FromObject(content);
+                    var result = (PublicationTestResult)await _businessEventsClient.TestBenchPublish(entityName, eventName, major, minor, client, payload);
 
-                await _testLogic.SetStateAsync(test, StateEnum.Ok, "Event intercepted");
+                    if (result.Verified)
+                    {
+                        await _testLogic.SetStateAsync(test, StateEnum.Ok, "Event intercepted and verified with BE Test bench");
+                    }
+                    else
+                    {
+                        var message = string.Join(", ", result.Errors) +
+                                      $" | Contract: {JsonConvert.SerializeObject(result.Contract)}" +
+                                      $" | Payload: {JsonConvert.SerializeObject(result.Payload)}";
+                        await _testLogic.SetStateAsync(test, StateEnum.Failed, message);
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    await _testLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
+                }
+
             }
         }
     }
