@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+using Nexus.Link.Libraries.Core.Platform.Authentication;
 using Nexus.Link.Libraries.Web.RestClientHelper;
 
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Mocks
+namespace Service.RestClients
 {
     public class IntegrationApiRestClient : RestClient
     {
@@ -16,6 +16,14 @@ namespace Service.ContractTests.Mocks
         {
             var relativeUrl = $"BusinessEvents/Publish/{entityName}/{eventName}/{major}/{minor}";
             await PostNoResponseContentAsync(relativeUrl, eventContent);
+        }
+
+        public async Task<AuthenticationToken> CreateToken(string clientId, string clientSecret)
+        {
+            var relativeUrl = "Authentication/Tokens";
+            var authenticationCredentials = new AuthenticationCredentials { ClientId = clientId, ClientSecret = clientSecret };
+            var result = await PostAsync<AuthenticationToken, AuthenticationCredentials>(relativeUrl, authenticationCredentials);
+            return result;
         }
     }
 }

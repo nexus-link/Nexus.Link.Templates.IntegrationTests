@@ -234,6 +234,31 @@
         <member name="P:Service.NexusSettings.BusinessEventsUrl">
             <summary></summary>
         </member>
+        <member name="T:Service.PlatformConfigurationTests.Capability1.PlatformAuthenticationTestController">
+            <summary>
+            Tests Nexus Authentication as a service in the platform
+            </summary>
+        </member>
+        <member name="M:Service.PlatformConfigurationTests.Capability1.PlatformAuthenticationTestController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.PlatformConfigurationTests.Capability1.PlatformAuthenticationTestController.AuthenticatePlatformClient(SharedKernel.Test)">
+            <summary>
+            EXAMPLE: Test known API user
+            </summary>
+        </member>
+        <member name="T:Service.PlatformSettings">
+            <summary></summary>
+        </member>
+        <member name="P:Service.PlatformSettings.BusinessApiUrl">
+            <summary></summary>
+        </member>
+        <member name="P:Service.PlatformSettings.ClientId">
+            <summary></summary>
+        </member>
+        <member name="P:Service.PlatformSettings.ClientSecret">
+            <summary></summary>
+        </member>
         <member name="T:Service.Program">
             <summary></summary>
         </member>
@@ -275,7 +300,7 @@
         <member name="F:Service.TestGrouping.CapabilityContractTests">
             <summary></summary>
         </member>
-        <member name="F:Service.TestGrouping.ConfigurationTests">
+        <member name="F:Service.TestGrouping.PlatformConfigurationTests">
             <summary></summary>
         </member>
         <member name="F:Service.TestGrouping.BusinessProcessesTests">

@@ -61,7 +61,7 @@ namespace Service.Controllers
             {
                 try
                 {
-                    var client = FulcrumApplication.Context.CallingClientName ?? "apa"; // TODO
+                    var client = FulcrumApplication.Context.CallingClientName;
                     var payload = JObject.FromObject(content);
                     var result = (PublicationTestResult)await _businessEventsClient.TestBenchPublish(entityName, eventName, major, minor, client, payload);
 

@@ -53,7 +53,7 @@ namespace Service.Controllers
         [HttpPost("AllConfigurationTests")]
         public async Task<Test> ConfigurationTests(Test parent = null)
         {
-            return await RunTopLevelTestAsync(parent, TestGrouping.ConfigurationTests);
+            return await RunTopLevelTestAsync(parent, TestGrouping.PlatformConfigurationTests);
         }
 
         private async Task<Test> RunTopLevelTestAsync(Test parent, string group)

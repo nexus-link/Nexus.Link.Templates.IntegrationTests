@@ -20,13 +20,10 @@ namespace Service.ContractTests.Capability1
     [Route("api/v1/[controller]")]
     public class Capability1TestsController : TestControllerBase, ITestable
     {
-        private readonly ITestLogic _testLogic;
         private readonly Capability1RestClient _restclient;
 
         public Capability1TestsController(IConfiguration configuration, ITestLogic testLogic) : base(testLogic)
         {
-            _testLogic = testLogic;
-
             var baseUri = $"{configuration["BaseUrl"]}/Capability1Mocks/api/v1";
             _restclient = new Capability1RestClient(new HttpSender(baseUri));
         }
@@ -37,7 +34,7 @@ namespace Service.ContractTests.Capability1
         [HttpPost("All")]
         public async Task<Test> RunAllAsync(Test parent = null)
         {
-            var container = await _testLogic.CreateAsync("Capability 1 contract tests", parent);
+            var container = await TestLogic.CreateAsync("Capability 1 contract tests", parent);
 
             await RunTestablesSkippingRunAllAsync(container, new List<ControllerBase> { this });
 
@@ -51,9 +48,9 @@ namespace Service.ContractTests.Capability1
         [HttpPost("OrderCreatedEvent")]
         public async Task<Test> OrderCreatedEvent(Test parent)
         {
-            var test = await _testLogic.CreateAsync("OrderCreatedEvent", parent);
-            var createTest = await _testLogic.CreateAsync("Create", test);
-            var eventTest = await _testLogic.CreateAsync("Event", test);
+            var test = await TestLogic.CreateAsync("OrderCreatedEvent", parent);
+            var createTest = await TestLogic.CreateAsync("Create", test);
+            var eventTest = await TestLogic.CreateAsync("Event", test);
 
             try
             {
@@ -63,13 +60,13 @@ namespace Service.ContractTests.Capability1
                 if (order?.Id == null) throw new Exception("No Order was created");
 
                 createTest.Properties = new Dictionary<string, object> { { "Order", order } };
-                await _testLogic.UpdateAsync(createTest);
-                await _testLogic.SetStateAsync(createTest, StateEnum.Ok, "Order created");
+                await TestLogic.UpdateAsync(createTest);
+                await TestLogic.SetStateAsync(createTest, StateEnum.Ok, "Order created");
 
             }
             catch (Exception e)
             {
-                await _testLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
+                await TestLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
             }
 
             // Note! We leave the state as Waiting and set to Ok once the event is intercepted in IntegrationApiController
@@ -84,7 +81,7 @@ namespace Service.ContractTests.Capability1
         [HttpPost("CrudPerson")]
         public async Task<Test> CreatePerson(Test parent)
         {
-            var test = await _testLogic.CreateAsync("CrudPerson", parent);
+            var test = await TestLogic.CreateAsync("CrudPerson", parent);
 
             try
             {
@@ -94,7 +91,7 @@ namespace Service.ContractTests.Capability1
                 var personId = person.Id;
 
                 test.Properties = new Dictionary<string, object> { { "Person", person } };
-                await _testLogic.UpdateAsync(test);
+                await TestLogic.UpdateAsync(test);
 
                 // Read
                 person = await _restclient.GetPerson(personId);
@@ -108,11 +105,11 @@ namespace Service.ContractTests.Capability1
                 if (person != null) throw new Exception($"Person {personId} should be deleted");
 
                 // All ok!
-                await _testLogic.SetStateAsync(test, StateEnum.Ok, "ok");
+                await TestLogic.SetStateAsync(test, StateEnum.Ok, "ok");
             }
             catch (Exception e)
             {
-                await _testLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
+                await TestLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
             }
 
 

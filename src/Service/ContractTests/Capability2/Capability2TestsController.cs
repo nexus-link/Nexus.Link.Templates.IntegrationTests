@@ -14,11 +14,8 @@ namespace Service.ContractTests.Capability2
     [Route("api/v1/[controller]")]
     public class Capability2TestsController : TestControllerBase, ITestable
     {
-        private readonly ITestLogic _testLogic;
-
         public Capability2TestsController(ITestLogic testLogic) : base(testLogic)
         {
-            _testLogic = testLogic;
         }
 
         public string Group => TestGrouping.CapabilityContractTests;
@@ -27,7 +24,7 @@ namespace Service.ContractTests.Capability2
         [HttpPost("All")]
         public async Task<Test> RunAllAsync(Test parent = null)
         {
-            var container = await _testLogic.CreateAsync("Capability 2 contract tests", parent);
+            var container = await TestLogic.CreateAsync("Capability 2 contract tests", parent);
 
             await RunTestablesSkippingRunAllAsync(container, new List<ControllerBase> { this });
 
@@ -38,10 +35,10 @@ namespace Service.ContractTests.Capability2
         [HttpPost("Test1")]
         public async Task<Test> Test1(Test parent)
         {
-            var test = await _testLogic.CreateAsync("Capability 2 Test 1", parent);
+            var test = await TestLogic.CreateAsync("Capability 2 Test 1", parent);
 
             // TODO: Do test and update state
-            await _testLogic.SetStateAsync(test, StateEnum.Failed, "awwwhh");
+            await TestLogic.SetStateAsync(test, StateEnum.Failed, "awwwhh");
 
             return test;
         }
@@ -50,7 +47,7 @@ namespace Service.ContractTests.Capability2
         [HttpPost("Test2")]
         public async Task<Test> Test2(Test parent)
         {
-            var test = await _testLogic.CreateAsync("Capability Y Test 2", parent);
+            var test = await TestLogic.CreateAsync("Capability Y Test 2", parent);
 
             // TODO: Do test and update state
 

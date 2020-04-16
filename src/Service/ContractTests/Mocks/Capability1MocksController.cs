@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using Nexus.Link.Libraries.Core.Error.Logic;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Nexus.Link.Libraries.Web.RestClientHelper;
+using Service.RestClients;
 
 #pragma warning disable 1591
 

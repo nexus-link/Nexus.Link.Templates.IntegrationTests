@@ -12,7 +12,7 @@
         public const string CapabilityContractTests = "Capability contract tests";
 
         /// <summary></summary>
-        public const string ConfigurationTests = "Configuration tests";
+        public const string PlatformConfigurationTests = "Platform configuration tests";
 
         /// <summary></summary>
         public const string BusinessProcessesTests = "Business processes tests";
