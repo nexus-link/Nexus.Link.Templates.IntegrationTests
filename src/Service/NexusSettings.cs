@@ -22,17 +22,5 @@ namespace Service
 
         /// <summary></summary>
         public string PublicKey { get; set; }
-
-        /// <summary></summary>
-        public string AuthenticationUrl { get; set; }
-
-        /// <summary></summary>
-        public string ClientId { get; set; }
-
-        /// <summary></summary>
-        public string ClientSecret { get; set; }
-
-        /// <summary></summary>
-        public string BusinessEventsUrl { get; set; }
     }
 }

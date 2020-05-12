@@ -35,9 +35,12 @@ namespace Service.Controllers
             _testLogic = testLogic;
 
             var nexusSettings = configuration.GetSection("Nexus").Get<NexusSettings>();
-            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, nexusSettings.AuthenticationUrl);
-            var tokenRefresher = authManager.CreateTokenRefresher(new AuthenticationCredentials { ClientId = nexusSettings.ClientId, ClientSecret = nexusSettings.ClientSecret });
-            _businessEventsClient = new BusinessEvents(nexusSettings.BusinessEventsUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
+            var platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
+            // Note! Assumes same /Tokens endpoint in the Business API as in Nexus Fundamentals
+            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, platformSettings.BusinessApiUrl);
+            var tokenRefresher = authManager.CreateTokenRefresher(new AuthenticationCredentials { ClientId = platformSettings.ClientId, ClientSecret = platformSettings.ClientSecret });
+            // Note! Assumes same /TestBench endpoint in the Business API as in Nexus Business Events
+            _businessEventsClient = new BusinessEvents(platformSettings.BusinessApiUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
         }
 
 
