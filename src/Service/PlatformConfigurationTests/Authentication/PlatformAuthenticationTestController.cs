@@ -11,9 +11,10 @@ using Service.Logic;
 using Service.Models;
 using Service.RestClients;
 using SharedKernel;
+
 #pragma warning disable 1591
 
-namespace Service.PlatformConfigurationTests.Capability1
+namespace Service.PlatformConfigurationTests.Authentication
 {
     /// <summary>
     /// Tests Nexus Authentication as a service in the platform

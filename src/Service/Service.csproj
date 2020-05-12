@@ -33,10 +33,6 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="PlatformConfigurationTests\Authentication\" />
-  </ItemGroup>
-
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="http://json.schemastore.org/behat" /></VisualStudio></ProjectExtensions>
 
 

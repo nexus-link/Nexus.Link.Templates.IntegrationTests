@@ -21,6 +21,7 @@ Locally and in single instance environments the service can be run with memory s
 ## Database
 
 You can provide the app setting `SqlConnectionString` to use an Azure SQL database.
+(If you also provide a `MasterConnectionString`, the database will be created automatically for you.)
 
 Or provide `StorageConnectionString` to use Azure Table Storage.
 

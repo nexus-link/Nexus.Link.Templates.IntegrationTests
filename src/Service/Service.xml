@@ -222,15 +222,15 @@
         <member name="P:Service.NexusSettings.PublicKey">
             <summary></summary>
         </member>
-        <member name="T:Service.PlatformConfigurationTests.Capability1.PlatformAuthenticationTestController">
+        <member name="T:Service.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController">
             <summary>
             Tests Nexus Authentication as a service in the platform
             </summary>
         </member>
-        <member name="M:Service.PlatformConfigurationTests.Capability1.PlatformAuthenticationTestController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
+        <member name="M:Service.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
-        <member name="M:Service.PlatformConfigurationTests.Capability1.PlatformAuthenticationTestController.AuthenticatePlatformClient(SharedKernel.Test)">
+        <member name="M:Service.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController.AuthenticatePlatformClient(SharedKernel.Test)">
             <summary>
             EXAMPLE: Test known API user
             </summary>
