@@ -222,18 +222,6 @@
         <member name="P:Service.NexusSettings.PublicKey">
             <summary></summary>
         </member>
-        <member name="P:Service.NexusSettings.AuthenticationUrl">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.ClientId">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.ClientSecret">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.BusinessEventsUrl">
-            <summary></summary>
-        </member>
         <member name="T:Service.PlatformConfigurationTests.Capability1.PlatformAuthenticationTestController">
             <summary>
             Tests Nexus Authentication as a service in the platform
