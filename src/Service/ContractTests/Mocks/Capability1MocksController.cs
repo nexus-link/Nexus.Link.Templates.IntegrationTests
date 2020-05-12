@@ -31,7 +31,7 @@ namespace Service.ContractTests.Mocks
         public Capability1MocksController(IConfiguration configuration)
         {
             var baseUri = $"{configuration["BaseUrl"]}/IntegrationApi/api/v1"; // Use Platform integration test service as "integration api"
-            _apiRestClient= new IntegrationApiRestClient(new HttpSender(baseUri));
+            _apiRestClient = new IntegrationApiRestClient(new HttpSender(baseUri));
         }
 
         [SwaggerGroup("Mocks")]
@@ -66,8 +66,7 @@ namespace Service.ContractTests.Mocks
             order.Id = Guid.NewGuid().ToString();
             EntityStorage.TryAdd(order.Id, order);
 
-            await _apiRestClient.PublishEvent("Order", "Created", 1, 0,
-                JObject.FromObject(new MockOrderEvent { OrderId = order.Id, Items = order.Items }));
+            await _apiRestClient.PublishEvent("Order", "Created", 1, 0, JObject.FromObject(new MockOrderEvent { OrderId = order.Id, Items = order.Items }));
 
             return order;
         }

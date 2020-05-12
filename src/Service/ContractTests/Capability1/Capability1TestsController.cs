@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -24,7 +23,7 @@ namespace Service.ContractTests.Capability1
 
         public Capability1TestsController(IConfiguration configuration, ITestLogic testLogic) : base(testLogic)
         {
-            var baseUri = $"{configuration["BaseUrl"]}/Capability1Mocks/api/v1";
+            var baseUri = $"{configuration["Capability1:BaseUrl"]}/api/v1";
             _restclient = new Capability1RestClient(new HttpSender(baseUri));
         }
 

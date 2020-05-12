@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Nexus.Link.Authentication.Sdk;
 using Nexus.Link.BusinessEvents.Sdk;
-using Nexus.Link.BusinessEvents.Sdk.RestClients.Models;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Core.Logging;
 using Nexus.Link.Libraries.Core.Platform.Authentication;
@@ -78,9 +77,9 @@ namespace Service.ContractTests.Capability1
             }
 
             // Check translation
-            if (payload?.Person?.Gender != "male")
+            if (payload.Person?.Gender != "male")
             {
-                await TestLogic.SetStateAsync(test, StateEnum.Failed, $"Expected {nameof(Event1.Person.Gender)} to be 'male', but was '{payload?.Person?.Gender}'");
+                await TestLogic.SetStateAsync(test, StateEnum.Failed, $"Expected {nameof(Event1.Person.Gender)} to be 'male', but was '{payload.Person?.Gender}'");
             }
             else
             {
