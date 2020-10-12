@@ -27,7 +27,7 @@ namespace Service.PlatformConfigurationTests.Authentication
         private readonly PlatformSettings _platformSettings;
 
         /// <summary></summary>
-        public PlatformAuthenticationTestController(IConfiguration configuration, ITestLogic testLogic) : base(testLogic)
+        public PlatformAuthenticationTestController(IConfiguration configuration, ITestLogic testLogic) : base(configuration, testLogic)
         {
             _platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
             _apiRestClient = new IntegrationApiRestClient(new HttpSender(_platformSettings.BusinessApiUrl));

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Service.Logic;
 using Service.Models;
@@ -15,11 +16,14 @@ namespace Service.Controllers
     public abstract class TestControllerBase : ControllerBase
     {
         /// <summary></summary>
+        protected readonly IConfiguration Configuration;
+        /// <summary></summary>
         protected readonly ITestLogic TestLogic;
 
         /// <summary></summary>
-        protected TestControllerBase(ITestLogic testLogic)
+        protected TestControllerBase(IConfiguration configuration, ITestLogic testLogic)
         {
+            Configuration = configuration;
             TestLogic = testLogic;
         }
 
@@ -31,7 +35,7 @@ namespace Service.Controllers
                 .Where(x => typeof(ITestable).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
                 .Select(x =>
                 {
-                    var instance = (ITestable)Activator.CreateInstance(x, TestLogic); // TODO: Not so nice
+                    var instance = (ITestable)Activator.CreateInstance(x, Configuration, TestLogic); // TODO: Not so nice
                     return instance;
                 })
                 .Where(x => x.Group == group)

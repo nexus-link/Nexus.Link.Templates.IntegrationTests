@@ -31,7 +31,7 @@ namespace Service.ContractTests.Capability1
     {
         private readonly IBusinessEvents _businessEventsClient;
 
-        public Capability1CallbackController(IConfiguration configuration, ITestLogic testLogic) : base(testLogic)
+        public Capability1CallbackController(IConfiguration configuration, ITestLogic testLogic) : base(configuration, testLogic)
         {
             var nexusSettings = configuration.GetSection("Nexus").Get<NexusSettings>();
             var platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();

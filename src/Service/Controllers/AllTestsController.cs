@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Service.Logic;
 using SharedKernel;
@@ -16,7 +17,7 @@ namespace Service.Controllers
     public class AllTestsController : TestControllerBase
     {
         /// <summary></summary>
-        public AllTestsController(ITestLogic testLogic) : base(testLogic)
+        public AllTestsController(IConfiguration configuration, ITestLogic testLogic) : base(configuration, testLogic)
         {
         }
 

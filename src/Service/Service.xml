@@ -52,7 +52,7 @@
             Convenience for running all tests in different categories.
             </summary>
         </member>
-        <member name="M:Service.Controllers.AllTestsController.#ctor(Service.Logic.ITestLogic)">
+        <member name="M:Service.Controllers.AllTestsController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
         <member name="M:Service.Controllers.AllTestsController.TopLevelAllTestsAsync">
@@ -91,10 +91,13 @@
         <member name="T:Service.Controllers.TestControllerBase">
             <summary></summary>
         </member>
+        <member name="F:Service.Controllers.TestControllerBase.Configuration">
+            <summary></summary>
+        </member>
         <member name="F:Service.Controllers.TestControllerBase.TestLogic">
             <summary></summary>
         </member>
-        <member name="M:Service.Controllers.TestControllerBase.#ctor(Service.Logic.ITestLogic)">
+        <member name="M:Service.Controllers.TestControllerBase.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
         <member name="M:Service.Controllers.TestControllerBase.FindTestables(System.String)">

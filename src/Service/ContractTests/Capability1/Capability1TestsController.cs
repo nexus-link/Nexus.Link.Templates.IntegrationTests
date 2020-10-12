@@ -21,7 +21,7 @@ namespace Service.ContractTests.Capability1
     {
         private readonly Capability1RestClient _restclient;
 
-        public Capability1TestsController(IConfiguration configuration, ITestLogic testLogic) : base(testLogic)
+        public Capability1TestsController(IConfiguration configuration, ITestLogic testLogic) : base(configuration, testLogic)
         {
             var baseUri = $"{configuration["Capability1:BaseUrl"]}/api/v1";
             _restclient = new Capability1RestClient(new HttpSender(baseUri));

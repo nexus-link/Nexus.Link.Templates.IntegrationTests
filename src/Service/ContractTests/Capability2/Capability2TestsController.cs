@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Service.Controllers;
 using Service.Logic;
@@ -14,7 +15,7 @@ namespace Service.ContractTests.Capability2
     [Route("api/v1/[controller]")]
     public class Capability2TestsController : TestControllerBase, ITestable
     {
-        public Capability2TestsController(ITestLogic testLogic) : base(testLogic)
+        public Capability2TestsController(IConfiguration configuration, ITestLogic testLogic) : base(configuration, testLogic)
         {
         }
 
