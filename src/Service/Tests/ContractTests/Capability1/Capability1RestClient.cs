@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Nexus.Link.Libraries.Core.Error.Logic;
 using Nexus.Link.Libraries.Web.RestClientHelper;
-using Service.ContractTests.Mocks;
+using Service.Tests.ContractTests.Mocks;
 
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Capability1
+namespace Service.Tests.ContractTests.Capability1
 {
     public class Capability1RestClient : RestClient
     {

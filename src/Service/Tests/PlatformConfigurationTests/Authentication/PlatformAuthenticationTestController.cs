@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Nexus.Link.Libraries.Web.RestClientHelper;
+using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
 using Service.Models;
@@ -15,7 +16,7 @@ using SharedKernel;
 
 #pragma warning disable 1591
 
-namespace Service.PlatformConfigurationTests.Authentication
+namespace Service.Tests.PlatformConfigurationTests.Authentication
 {
     /// <summary>
     /// Tests Nexus Authentication as a service in the platform

@@ -4,13 +4,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
+using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
 using Service.Models;
 using SharedKernel;
+
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Capability2
+namespace Service.Tests.ContractTests.Capability2
 {
     [Authorize(AuthenticationSchemes = "Basic")]
     [ApiController]

@@ -1,6 +1,6 @@
 ﻿using Nexus.Link.Libraries.Core.MultiTenant.Model;
 
-namespace Service
+namespace Service.Configuration
 {
     /// <summary></summary>
     public class NexusSettings

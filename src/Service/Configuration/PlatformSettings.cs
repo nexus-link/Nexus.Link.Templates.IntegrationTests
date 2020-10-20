@@ -1,4 +1,4 @@
-﻿namespace Service
+﻿namespace Service.Configuration
 {
     /// <summary></summary>
     public class PlatformSettings

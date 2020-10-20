@@ -9,15 +9,16 @@ using Nexus.Link.BusinessEvents.Sdk;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Core.Logging;
 using Nexus.Link.Libraries.Core.Platform.Authentication;
-using Service.ContractTests.Capability1.Models;
+using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
+using Service.Tests.ContractTests.Capability1.Models;
 using SharedKernel;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Capability1
+namespace Service.Tests.ContractTests.Capability1
 {
     /// <summary>
     /// Represents a test strategy where the Platform Integration Test Service is a subscriber of events.

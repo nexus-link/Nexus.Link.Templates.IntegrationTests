@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Service.Configuration;
 using SharedKernel;
 
 namespace Service.Models

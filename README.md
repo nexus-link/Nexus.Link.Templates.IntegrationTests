@@ -4,8 +4,8 @@ Based on the Nexus concept and the thoughts described here: [Platform Integratio
 
 ## TODOs
 
+* Auth: Describe "business-api-caller" (need to change to own role value)
 * Logging
-* Authentication
 * Stubs for Business Api tests
 * Stubs for Business Processes tests
 * Multi-environment support?
@@ -42,6 +42,3 @@ Found in `BusinessApiTests` namespace. See [Test configuration of the platform](
 ### Business processes tests
 
 Found in `BusinessProcessesTests` namespace. See [Test business processes](https://docs.nexus.link/docs/platformtesting-business-processes).
-
-### TODO
-* Describe "business-api-caller" (need to change to own role value)

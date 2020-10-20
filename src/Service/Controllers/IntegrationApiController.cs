@@ -12,6 +12,7 @@ using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Core.Assert;
 using Nexus.Link.Libraries.Core.Platform.Authentication;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
+using Service.Configuration;
 using Service.Logic;
 using SharedKernel;
 

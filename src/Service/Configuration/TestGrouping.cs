@@ -1,4 +1,4 @@
-﻿namespace Service
+﻿namespace Service.Configuration
 {
     /// <summary>
     /// The different types of tests this service provides

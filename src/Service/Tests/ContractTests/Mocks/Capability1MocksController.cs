@@ -12,7 +12,7 @@ using Service.RestClients;
 
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Mocks
+namespace Service.Tests.ContractTests.Mocks
 {
     /// <summary>
     /// Used for mocking capability providers.

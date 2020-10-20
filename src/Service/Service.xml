@@ -21,31 +21,55 @@
         <member name="M:Service.BackgroundTasks.PurgeJob.Dispose">
             <summary></summary>
         </member>
-        <member name="T:Service.ContractTests.Capability1.Capability1CallbackController">
-             <summary>
-             Represents a test strategy where the Platform Integration Test Service is a subscriber of events.
-            
-             (The other strategy is for the adapters to use the Platform Integration Test Service
-             as their "Integration Api" which they use to send events, which are then intercepted)
-             </summary>
+        <member name="T:Service.Configuration.NexusSettings">
+            <summary></summary>
         </member>
-        <member name="M:Service.ContractTests.Capability1.Capability1TestsController.OrderCreatedEvent(SharedKernel.Test)">
+        <member name="P:Service.Configuration.NexusSettings.ApplicationName">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Configuration.NexusSettings.Organization">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Configuration.NexusSettings.Environment">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Configuration.NexusSettings.Tenant">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Configuration.NexusSettings.RunTimeLevel">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Configuration.NexusSettings.PublicKey">
+            <summary></summary>
+        </member>
+        <member name="T:Service.Configuration.PlatformSettings">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Configuration.PlatformSettings.BusinessApiUrl">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Configuration.PlatformSettings.ClientId">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Configuration.PlatformSettings.ClientSecret">
+            <summary></summary>
+        </member>
+        <member name="T:Service.Configuration.TestGrouping">
             <summary>
-            EXAMPLE: Trigger event by creating entity
+            The different types of tests this service provides
             </summary>
         </member>
-        <member name="M:Service.ContractTests.Capability1.Capability1TestsController.CreatePerson(SharedKernel.Test)">
-            <summary>
-            EXAMPLE: CRUD person entity
-            </summary>
+        <member name="F:Service.Configuration.TestGrouping.Common">
+            <summary></summary>
         </member>
-        <member name="T:Service.ContractTests.Mocks.Capability1MocksController">
-            <summary>
-            Used for mocking capability providers.
-            </summary>
-            <remarks>
-            Only single instance support.
-            </remarks>
+        <member name="F:Service.Configuration.TestGrouping.CapabilityContractTests">
+            <summary></summary>
+        </member>
+        <member name="F:Service.Configuration.TestGrouping.PlatformConfigurationTests">
+            <summary></summary>
+        </member>
+        <member name="F:Service.Configuration.TestGrouping.BusinessProcessesTests">
+            <summary></summary>
         </member>
         <member name="T:Service.Controllers.AllTestsController">
             <summary>
@@ -194,7 +218,7 @@
         </member>
         <member name="P:Service.Models.ITestable.Group">
             <summary>
-            What test grouping it belongs to. See <see cref="T:Service.TestGrouping"/>.
+            What test grouping it belongs to. See <see cref="T:Service.Configuration.TestGrouping"/>.
             </summary>
         </member>
         <member name="M:Service.Models.ITestable.RunAllAsync(SharedKernel.Test)">
@@ -203,52 +227,6 @@
             </summary>
             <param name="parent">The parent test (if any)</param>
             <returns>A test that wraps all other tests</returns>
-        </member>
-        <member name="T:Service.NexusSettings">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.ApplicationName">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.Organization">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.Environment">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.Tenant">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.RunTimeLevel">
-            <summary></summary>
-        </member>
-        <member name="P:Service.NexusSettings.PublicKey">
-            <summary></summary>
-        </member>
-        <member name="T:Service.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController">
-            <summary>
-            Tests Nexus Authentication as a service in the platform
-            </summary>
-        </member>
-        <member name="M:Service.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
-            <summary></summary>
-        </member>
-        <member name="M:Service.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController.AuthenticatePlatformClient(SharedKernel.Test)">
-            <summary>
-            Create a JWT through the Business API for known API user
-            </summary>
-        </member>
-        <member name="T:Service.PlatformSettings">
-            <summary></summary>
-        </member>
-        <member name="P:Service.PlatformSettings.BusinessApiUrl">
-            <summary></summary>
-        </member>
-        <member name="P:Service.PlatformSettings.ClientId">
-            <summary></summary>
-        </member>
-        <member name="P:Service.PlatformSettings.ClientSecret">
-            <summary></summary>
         </member>
         <member name="T:Service.Program">
             <summary></summary>
@@ -280,22 +258,44 @@
         <member name="M:Service.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
             <summary></summary>
         </member>
-        <member name="T:Service.TestGrouping">
+        <member name="T:Service.Tests.ContractTests.Capability1.Capability1CallbackController">
+             <summary>
+             Represents a test strategy where the Platform Integration Test Service is a subscriber of events.
+            
+             (The other strategy is for the adapters to use the Platform Integration Test Service
+             as their "Integration Api" which they use to send events, which are then intercepted)
+             </summary>
+        </member>
+        <member name="M:Service.Tests.ContractTests.Capability1.Capability1TestsController.OrderCreatedEvent(SharedKernel.Test)">
             <summary>
-            The different types of tests this service provides
+            EXAMPLE: Trigger event by creating entity
             </summary>
         </member>
-        <member name="F:Service.TestGrouping.Common">
+        <member name="M:Service.Tests.ContractTests.Capability1.Capability1TestsController.CreatePerson(SharedKernel.Test)">
+            <summary>
+            EXAMPLE: CRUD person entity
+            </summary>
+        </member>
+        <member name="T:Service.Tests.ContractTests.Mocks.Capability1MocksController">
+            <summary>
+            Used for mocking capability providers.
+            </summary>
+            <remarks>
+            Only single instance support.
+            </remarks>
+        </member>
+        <member name="T:Service.Tests.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController">
+            <summary>
+            Tests Nexus Authentication as a service in the platform
+            </summary>
+        </member>
+        <member name="M:Service.Tests.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
-        <member name="F:Service.TestGrouping.CapabilityContractTests">
-            <summary></summary>
-        </member>
-        <member name="F:Service.TestGrouping.PlatformConfigurationTests">
-            <summary></summary>
-        </member>
-        <member name="F:Service.TestGrouping.BusinessProcessesTests">
-            <summary></summary>
+        <member name="M:Service.Tests.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController.AuthenticatePlatformClient(SharedKernel.Test)">
+            <summary>
+            Create a JWT through the Business API for known API user
+            </summary>
         </member>
     </members>
 </doc>

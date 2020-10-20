@@ -7,14 +7,16 @@ using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Nexus.Link.Libraries.Web.RestClientHelper;
-using Service.ContractTests.Mocks;
+using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
 using Service.Models;
+using Service.Tests.ContractTests.Mocks;
 using SharedKernel;
+
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Capability1
+namespace Service.Tests.ContractTests.Capability1
 {
     [Authorize(AuthenticationSchemes = "Basic")]
     [ApiController]
