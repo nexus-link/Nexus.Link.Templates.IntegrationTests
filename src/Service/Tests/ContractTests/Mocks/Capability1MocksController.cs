@@ -20,6 +20,9 @@ namespace Service.Tests.ContractTests.Mocks
     /// <remarks>
     /// Only single instance support.
     /// </remarks>
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    // :::::::::::::::::: TASK: Remove this class ::::::::::::::::::
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     [AllowAnonymous]
     [Route("[controller]/api/v1")]
     [ApiController]

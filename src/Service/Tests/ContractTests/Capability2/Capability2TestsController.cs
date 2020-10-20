@@ -36,6 +36,10 @@ namespace Service.Tests.ContractTests.Capability2
             return container;
         }
 
+        // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+        // :::::::::::::::::: TASK: Setup the tests ::::::::::::::::::
+        // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
         [SwaggerGroup(TestGrouping.CapabilityContractTests)]
         [HttpPost("Test1")]
         public async Task<Test> Test1(Test parent)

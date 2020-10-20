@@ -44,6 +44,11 @@ namespace Service.Tests.ContractTests.Capability1
             return container;
         }
 
+        // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+        // :::::::::::::::::: TASK: Setup the tests ::::::::::::::::::
+        // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
         /// <summary>
         /// EXAMPLE: Trigger event by creating entity
         /// </summary>

@@ -132,6 +132,10 @@ namespace Service
             // Convert exceptions into error responses (HTTP status codes 400 and 500)
             app.UseNexusExceptionToFulcrumResponse();
 
+            // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+            // :::::::::::::::::: TASK: Setup logging ::::::::::::::::::
+            // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
             // Handles token validation and sets FulcrumApplication.Context.CallingClientName
             var nexusSettings = Configuration.GetSection("Nexus").Get<NexusSettings>();
             app.UseNexusTokenValidationHandler(nexusSettings.PublicKey);

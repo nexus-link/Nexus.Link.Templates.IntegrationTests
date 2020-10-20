@@ -10,6 +10,9 @@ Based on the Nexus concept and the thoughts described here: [Platform Integratio
 * Stubs for Business Processes tests
 * Multi-environment support?
 
+## Template tasks
+There are placeholders in the template code starting with "TASK: ", which you should take action upon.
+
 ## Support for multiple instances
 
 The template can be used in two different modes, with a physical (sql or table) or a memory storage. When using a database you get support for running the test service on multiple instances.

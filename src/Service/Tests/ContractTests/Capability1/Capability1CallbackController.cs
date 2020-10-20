@@ -26,6 +26,9 @@ namespace Service.Tests.ContractTests.Capability1
     /// (The other strategy is for the adapters to use the Platform Integration Test Service
     /// as their "Integration Api" which they use to send events, which are then intercepted)
     /// </summary>
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    // :::::::::::::::::: TASK: Change role ::::::::::::::::::
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::
     [Authorize(Roles = "business-api-caller")]
     [ApiExplorerSettings(IgnoreApi = true)]
     [ApiController]

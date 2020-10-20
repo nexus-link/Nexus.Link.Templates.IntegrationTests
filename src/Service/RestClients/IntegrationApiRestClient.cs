@@ -10,6 +10,7 @@ namespace Service.RestClients
     {
         public IntegrationApiRestClient(IHttpSender httpSender) : base(httpSender)
         {
+            // TODO: Auth
         }
 
         public async Task PublishEvent(string entityName, string eventName, int major, int minor, dynamic eventContent)

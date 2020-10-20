@@ -4,6 +4,10 @@
 
 namespace Service.Tests.ContractTests.Capability1.Models
 {
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    // :::::::::::::::::: TASK: Remove this class ::::::::::::::::::
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
     public class Event1
     {
         public Person Person { get; set; }

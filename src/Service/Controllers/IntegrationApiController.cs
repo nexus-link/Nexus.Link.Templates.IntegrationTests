@@ -23,6 +23,9 @@ namespace Service.Controllers
     ///
     /// Used to intercept events in the Capability contract tests
     /// </summary>
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    // :::::::::::::::::: TASK: Change role ::::::::::::::::::
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::
     [Authorize(Roles = "business-api-caller")]
     [Route("[controller]/api/v1")]
     [ApiController]
