@@ -70,7 +70,6 @@ namespace Service
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = ApiName, Version = "v1" });
                 c.EnableAnnotations();
-                c.TagActionsBy(api => new List<string> { api.GroupName });
 
                 var xmlFile = Path.ChangeExtension(typeof(Startup).Assembly.Location, ".xml");
                 c.IncludeXmlComments(xmlFile);

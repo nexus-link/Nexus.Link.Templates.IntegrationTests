@@ -146,12 +146,6 @@
             Get a test by id
             </summary>
         </member>
-        <member name="T:Service.Logic.ConfigurationHelper">
-            <summary></summary>
-        </member>
-        <member name="M:Service.Logic.ConfigurationHelper.#ctor(Microsoft.Extensions.Configuration.IConfiguration)">
-            <summary></summary>
-        </member>
         <member name="T:Service.Logic.TestLogic">
             <summary>
             Maps models from outside world to storage world

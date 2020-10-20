@@ -24,6 +24,7 @@ namespace Service.Tests.ContractTests.Mocks
     // :::::::::::::::::: TASK: Remove this class ::::::::::::::::::
     // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
     [AllowAnonymous]
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("[controller]/api/v1")]
     [ApiController]
     public class Capability1MocksController : ControllerBase
