@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -24,6 +25,7 @@ namespace Service.ContractTests.Capability1
     /// (The other strategy is for the adapters to use the Platform Integration Test Service
     /// as their "Integration Api" which they use to send events, which are then intercepted)
     /// </summary>
+    [Authorize(Roles = "business-api-caller")]
     [ApiExplorerSettings(IgnoreApi = true)]
     [ApiController]
     [Route("api/v1/[controller]")]

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,7 @@ namespace Service.ContractTests.Mocks
     /// <remarks>
     /// Only single instance support.
     /// </remarks>
+    [AllowAnonymous]
     [Route("[controller]/api/v1")]
     [ApiController]
     public class Capability1MocksController : ControllerBase
@@ -30,7 +32,7 @@ namespace Service.ContractTests.Mocks
 
         public Capability1MocksController(IConfiguration configuration)
         {
-            var baseUri = $"{configuration["BaseUrl"]}/IntegrationApi/api/v1"; // Use Platform integration test service as "integration api"
+            var baseUri = $"{configuration["Service:BaseUrl"]}/IntegrationApi/api/v1"; // Use Platform integration test service as "integration api"
             _apiRestClient = new IntegrationApiRestClient(new HttpSender(baseUri));
         }
 

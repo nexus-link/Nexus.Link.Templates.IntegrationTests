@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
@@ -11,6 +12,7 @@ using SharedKernel;
 
 namespace Service.ContractTests.Capability2
 {
+    [Authorize(AuthenticationSchemes = "Basic")]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class Capability2TestsController : TestControllerBase, ITestable

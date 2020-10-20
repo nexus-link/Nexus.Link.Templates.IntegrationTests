@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Core.Application;
@@ -19,6 +20,7 @@ namespace Service.PlatformConfigurationTests.Authentication
     /// <summary>
     /// Tests Nexus Authentication as a service in the platform
     /// </summary>
+    [Authorize(AuthenticationSchemes = "Basic")]
     [Route("api/[controller]")]
     [ApiController]
     public class PlatformAuthenticationTestController : TestControllerBase, ITestable
@@ -48,7 +50,7 @@ namespace Service.PlatformConfigurationTests.Authentication
         }
 
         /// <summary>
-        /// EXAMPLE: Test known API user
+        /// Create a JWT through the Business API for known API user
         /// </summary>
         [SwaggerGroup(TestGrouping.PlatformConfigurationTests)]
         [HttpPost("AuthenticatePlatformClient")]

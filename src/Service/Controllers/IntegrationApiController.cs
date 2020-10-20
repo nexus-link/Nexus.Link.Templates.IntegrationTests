@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -21,6 +22,7 @@ namespace Service.Controllers
     ///
     /// Used to intercept events in the Capability contract tests
     /// </summary>
+    [Authorize(Roles = "business-api-caller")]
     [Route("[controller]/api/v1")]
     [ApiController]
     public class IntegrationApiController : ControllerBase

@@ -42,3 +42,6 @@ Found in `BusinessApiTests` namespace. See [Test configuration of the platform](
 ### Business processes tests
 
 Found in `BusinessProcessesTests` namespace. See [Test business processes](https://docs.nexus.link/docs/platformtesting-business-processes).
+
+### TODO
+* Describe "business-api-caller" (need to change to own role value)

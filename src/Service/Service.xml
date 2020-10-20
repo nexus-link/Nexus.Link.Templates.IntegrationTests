@@ -235,7 +235,7 @@
         </member>
         <member name="M:Service.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController.AuthenticatePlatformClient(SharedKernel.Test)">
             <summary>
-            EXAMPLE: Test known API user
+            Create a JWT through the Business API for known API user
             </summary>
         </member>
         <member name="T:Service.PlatformSettings">

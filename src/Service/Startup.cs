@@ -4,17 +4,18 @@ using System.Text.Json.Serialization;
 using DataAccess.Memory;
 using DataAccess.Sql;
 using DataAccess.TableStorage;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Nexus.Link.Authentication.AspNet.Sdk.Handlers;
 using Nexus.Link.Libraries.Web.AspNet.Pipe.Inbound;
+using Service.Configuration;
 using Service.Logic;
 using SharedKernel;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Service
 {
@@ -42,8 +43,16 @@ namespace Service
         {
             ApiName = Configuration["ApiName"];
 
+            services.AddAuthentication("Basic").AddScheme<TokenAuthenticationOptions, TokenAuthenticationHandler>("Basic", o => { });
+
             services
-                .AddMvc()
+                .AddMvc(config =>
+                {
+                    var policy = new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        .Build();
+                    config.Filters.Add(new AuthorizeFilter(policy));
+                })
                 .AddMvcOptions(options =>
                 {
                     options.EnableEndpointRouting = false;
@@ -57,25 +66,47 @@ namespace Service
                     options.JsonSerializerOptions.PropertyNamingPolicy = null;
                 });
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
-
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = ApiName, Version = "v1" });
                 c.EnableAnnotations();
                 c.TagActionsBy(api => new List<string> { api.GroupName });
-                
+
                 var xmlFile = Path.ChangeExtension(typeof(Startup).Assembly.Location, ".xml");
                 c.IncludeXmlComments(xmlFile);
+
+                c.AddSecurityDefinition("basic", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "basic",
+                    In = ParameterLocation.Header,
+                    Description = "Basic Authorization header using the Bearer scheme."
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "basic"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
             });
 
-            var sqlConnectionString = Configuration["SqlConnectionString"];
-            var storageConnectionString = Configuration["StorageConnectionString"];
+            var sqlConnectionString = Configuration["Service:SqlConnectionString"];
+            var storageConnectionString = Configuration["Service:StorageConnectionString"];
             if (!string.IsNullOrWhiteSpace(sqlConnectionString))
             {
                 var sqlStorage = new SqlStorage(sqlConnectionString);
                 services.AddSingleton<IStorage>(sqlStorage);
-                new DatabasePatcherHandler(HostEnvironment.ContentRootPath).PatchIfNecessary(Configuration["Environment"], sqlConnectionString, Configuration["MasterConnectionString"]);
+                new DatabasePatcherHandler(HostEnvironment.ContentRootPath).PatchIfNecessary(Configuration["Nexus:Environment"], sqlConnectionString, Configuration["Service:MasterConnectionString"]);
             }
             else if (!string.IsNullOrWhiteSpace(storageConnectionString))
             {
@@ -106,6 +137,7 @@ namespace Service
             app.UseNexusTokenValidationHandler(nexusSettings.PublicKey);
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseSwagger();
