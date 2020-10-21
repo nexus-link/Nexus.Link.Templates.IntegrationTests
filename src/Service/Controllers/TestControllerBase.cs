@@ -35,6 +35,7 @@ namespace Service.Controllers
                 .Where(x => typeof(ITestable).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
                 .Select(x =>
                 {
+                    // TODO: Would be nice with dependency injection
                     var instance = (ITestable)Activator.CreateInstance(x, Configuration, TestLogic); // TODO: Not so nice
                     return instance;
                 })

@@ -33,7 +33,7 @@ namespace Service.Tests.PlatformConfigurationTests.Authentication
         public PlatformAuthenticationTestController(IConfiguration configuration, ITestLogic testLogic) : base(configuration, testLogic)
         {
             _platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
-            _apiRestClient = new IntegrationApiRestClient(new HttpSender(_platformSettings.BusinessApiUrl));
+            _apiRestClient = new IntegrationApiRestClient(new HttpSender(_platformSettings.IntegrationApiUrl));
         }
 
 

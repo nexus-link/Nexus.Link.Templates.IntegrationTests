@@ -42,11 +42,11 @@ namespace Service.Controllers
 
             var nexusSettings = configuration.GetSection("Nexus").Get<NexusSettings>();
             var platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
-            // Note! Assumes same /Tokens endpoint in the Business API as in Nexus Fundamentals
-            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, platformSettings.BusinessApiUrl);
+            // Note! Assumes same /Tokens endpoint in the Integration API as in Nexus Fundamentals
+            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, platformSettings.IntegrationApiUrl);
             var tokenRefresher = authManager.CreateTokenRefresher(new AuthenticationCredentials { ClientId = platformSettings.ClientId, ClientSecret = platformSettings.ClientSecret });
-            // Note! Assumes same /TestBench endpoint in the Business API as in Nexus Business Events
-            _businessEventsClient = new BusinessEvents(platformSettings.BusinessApiUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
+            // Note! Assumes same /TestBench endpoint in the Integration API as in Nexus Business Events
+            _businessEventsClient = new BusinessEvents(platformSettings.IntegrationApiUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
         }
 
 

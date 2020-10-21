@@ -42,10 +42,10 @@ namespace Service.Tests.ContractTests.Capability1
             var nexusSettings = configuration.GetSection("Nexus").Get<NexusSettings>();
             var platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
             // Note! Assumes same /Tokens endpoint in the Business API as in Nexus Fundamentals
-            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, platformSettings.BusinessApiUrl);
+            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, platformSettings.IntegrationApiUrl);
             var tokenRefresher = authManager.CreateTokenRefresher(new AuthenticationCredentials { ClientId = platformSettings.ClientId, ClientSecret = platformSettings.ClientSecret });
             // Note! Assumes same /TestBench endpoint in the Business API as in Nexus Business Events
-            _businessEventsClient = new BusinessEvents(platformSettings.BusinessApiUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
+            _businessEventsClient = new BusinessEvents(platformSettings.IntegrationApiUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
         }
 
         [HttpPost("Test1")]
