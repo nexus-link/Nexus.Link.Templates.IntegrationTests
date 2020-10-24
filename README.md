@@ -2,10 +2,25 @@
 
 Based on the Nexus concept and the thoughts described here: [Platform Integration Testing Overview](https://docs.nexus.link/docs/platformtesting-overview)
 
-## TODOs
+## Template
+
+### Tasks
+There are placeholders in the template code starting with "TASK: ", which you should take action upon when  creating your own repo.
+
+* The template uses the authentication role "business-api-caller". Change this to match your platform.
+
+### Running the template 
+This template is setup to run for tenant "platform-integration-test-template-service/dev" in Nexus PRDSIM.
+
+1. Run the Mocks project (with dotnet, not IISExpress)
+2. Run the Service project (with dotnet, not IISExpress)
+3. In swagger of Service, authorize (credentials found in appsettings.Development.json; Service:Username, Service:Password)
+4. Try out /api/v1/AllTests
+5. Get test results with /api/v1/Tests/{id}
+
+### TODOs
 
 * Logging
-* Authentication
 * Stubs for Business Api tests
 * Stubs for Business Processes tests
 * Multi-environment support?

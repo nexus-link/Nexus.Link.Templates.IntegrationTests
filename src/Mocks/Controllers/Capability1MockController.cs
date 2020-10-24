@@ -1,40 +1,48 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Mocks.Helpers;
 using Newtonsoft.Json.Linq;
 using Nexus.Link.Libraries.Core.Error.Logic;
-using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Nexus.Link.Libraries.Web.RestClientHelper;
-using Service.RestClients;
 
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Mocks
+namespace Mocks.Controllers
 {
     /// <summary>
     /// Used for mocking capability providers.
+    ///
+    /// Testing pattern: "Platform integration test service as the Business API"
+    /// https://www.lucidchart.com/publicSegments/view/38f444a9-dc67-40dc-b639-5054f6a42043/image.png
+    ///
+    /// When sending events, use the Platform Integration Tests service.
+    /// It will check the event with Nexus Business Events test bench.
     /// </summary>
     /// <remarks>
     /// Only single instance support.
     /// </remarks>
-    [Route("[controller]/api/v1")]
+    [AllowAnonymous]
+    [Route("api/v1/Capability1Adapater")]
     [ApiController]
-    public class Capability1MocksController : ControllerBase
+    public class Capability1MockController : ControllerBase
     {
         // Note! Assumes unique id among different entities
         private static readonly ConcurrentDictionary<string, dynamic> EntityStorage = new ConcurrentDictionary<string, dynamic>();
 
-        private readonly IntegrationApiRestClient _apiRestClient;
+        private readonly IntegrationApiRestClient _integrationApiRestClient;
 
-        public Capability1MocksController(IConfiguration configuration)
+        public Capability1MockController(IConfiguration configuration)
         {
-            var baseUri = $"{configuration["BaseUrl"]}/IntegrationApi/api/v1"; // Use Platform integration test service as "integration api"
-            _apiRestClient = new IntegrationApiRestClient(new HttpSender(baseUri));
+            // Use Platform integration test service as "integration api" (it will intercept events and run them through test bench)
+            var baseUri = $"{configuration["PlatformTestService:BaseUrl"]}/api/v1/IntegrationApi";
+            var tokenRefresher = new TokenRefresher(configuration);
+            _integrationApiRestClient = new IntegrationApiRestClient(new HttpSender(baseUri, tokenRefresher));
         }
 
-        [SwaggerGroup("Mocks")]
         [HttpPost("PersonManagement/Persons")]
         public MockPerson CreatePerson(MockPerson person)
         {
@@ -43,7 +51,6 @@ namespace Service.ContractTests.Mocks
             return person;
         }
 
-        [SwaggerGroup("Mocks")]
         [HttpGet("PersonManagement/Persons/{id}")]
         public dynamic GetPersonById(string id)
         {
@@ -51,7 +58,6 @@ namespace Service.ContractTests.Mocks
             return EntityStorage[id];
         }
 
-        [SwaggerGroup("Mocks")]
         [HttpDelete("PersonManagement/Persons/{id}")]
         public void DeletePersonById(string id)
         {
@@ -59,34 +65,15 @@ namespace Service.ContractTests.Mocks
             EntityStorage.TryRemove(id, out _);
         }
 
-        [SwaggerGroup("Mocks")]
         [HttpPost("OrderManagement/Orders")]
         public async Task<MockOrder> CreateOrder(MockOrder order)
         {
             order.Id = Guid.NewGuid().ToString();
             EntityStorage.TryAdd(order.Id, order);
 
-            await _apiRestClient.PublishEvent("Order", "Created", 1, 0, JObject.FromObject(new MockOrderEvent { OrderId = order.Id, Items = order.Items }));
+            await _integrationApiRestClient.PublishEvent("Order", "Created", 1, 0, "capability1-mock", JObject.FromObject(new MockOrderEvent { OrderId = order.Id, Items = order.Items }));
 
             return order;
         }
-    }
-
-    public class MockPerson
-    {
-        public string Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    public class MockOrder
-    {
-        public string Id { get; set; }
-        public int Items { get; set; }
-    }
-
-    public class MockOrderEvent
-    {
-        public string OrderId { get; set; }
-        public int Items { get; set; }
     }
 }

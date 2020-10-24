@@ -1,20 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Nexus.Link.Libraries.Web.RestClientHelper;
-using Service.ContractTests.Mocks;
+using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
 using Service.Models;
+using Service.Tests.ContractTests.Capability1.Models;
 using SharedKernel;
+
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Capability1
+namespace Service.Tests.ContractTests.Capability1
 {
+    [Authorize(AuthenticationSchemes = "Basic")]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class Capability1TestsController : TestControllerBase, ITestable
@@ -23,7 +27,7 @@ namespace Service.ContractTests.Capability1
 
         public Capability1TestsController(IConfiguration configuration, ITestLogic testLogic) : base(configuration, testLogic)
         {
-            var baseUri = $"{configuration["Capability1:BaseUrl"]}/api/v1";
+            var baseUri = $"{configuration["Capability1:BaseUrl"]}";
             _restclient = new Capability1RestClient(new HttpSender(baseUri));
         }
 
@@ -39,6 +43,11 @@ namespace Service.ContractTests.Capability1
 
             return container;
         }
+
+        // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+        // :::::::::::::::::: TASK: Setup the tests ::::::::::::::::::
+        // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 
         /// <summary>
         /// EXAMPLE: Trigger event by creating entity
@@ -85,7 +94,7 @@ namespace Service.ContractTests.Capability1
             try
             {
                 // Create
-                var person = await _restclient.CreatePerson(new MockPerson {Name = "Raginaharjar"});
+                var person = await _restclient.CreatePerson(new MockPerson { Name = "Raginaharjar" });
                 if (person?.Id == null) throw new Exception("No Person was created");
                 var personId = person.Id;
 

@@ -1,16 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
+using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
 using Service.Models;
 using SharedKernel;
+
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Capability2
+namespace Service.Tests.ContractTests.Capability2
 {
+    [Authorize(AuthenticationSchemes = "Basic")]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class Capability2TestsController : TestControllerBase, ITestable
@@ -32,6 +36,10 @@ namespace Service.ContractTests.Capability2
             return container;
         }
 
+        // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+        // :::::::::::::::::: TASK: Setup the tests ::::::::::::::::::
+        // :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
         [SwaggerGroup(TestGrouping.CapabilityContractTests)]
         [HttpPost("Test1")]
         public async Task<Test> Test1(Test parent)
@@ -39,7 +47,7 @@ namespace Service.ContractTests.Capability2
             var test = await TestLogic.CreateAsync("Capability 2 Test 1", parent);
 
             // TODO: Do test and update state
-            await TestLogic.SetStateAsync(test, StateEnum.Failed, "awwwhh");
+            await TestLogic.SetStateAsync(test, StateEnum.Ok, "Ohh yeah");
 
             return test;
         }
@@ -51,6 +59,7 @@ namespace Service.ContractTests.Capability2
             var test = await TestLogic.CreateAsync("Capability Y Test 2", parent);
 
             // TODO: Do test and update state
+            await TestLogic.SetStateAsync(test, StateEnum.Ok, "Done");
 
             return test;
         }

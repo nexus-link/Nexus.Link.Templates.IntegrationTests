@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -8,15 +9,16 @@ using Nexus.Link.BusinessEvents.Sdk;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Core.Logging;
 using Nexus.Link.Libraries.Core.Platform.Authentication;
-using Service.ContractTests.Capability1.Models;
+using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
+using Service.Tests.ContractTests.Capability1.Models;
 using SharedKernel;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 #pragma warning disable 1591
 
-namespace Service.ContractTests.Capability1
+namespace Service.Tests.ContractTests.Capability1
 {
     /// <summary>
     /// Represents a test strategy where the Platform Integration Test Service is a subscriber of events.
@@ -24,6 +26,10 @@ namespace Service.ContractTests.Capability1
     /// (The other strategy is for the adapters to use the Platform Integration Test Service
     /// as their "Integration Api" which they use to send events, which are then intercepted)
     /// </summary>
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    // :::::::::::::::::: TASK: Change role ::::::::::::::::::
+    // :::::::::::::::::::::::::::::::::::::::::::::::::::::::
+    [Authorize(Roles = "business-api-caller")]
     [ApiExplorerSettings(IgnoreApi = true)]
     [ApiController]
     [Route("api/v1/[controller]")]
@@ -36,10 +42,10 @@ namespace Service.ContractTests.Capability1
             var nexusSettings = configuration.GetSection("Nexus").Get<NexusSettings>();
             var platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
             // Note! Assumes same /Tokens endpoint in the Business API as in Nexus Fundamentals
-            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, platformSettings.BusinessApiUrl);
+            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, platformSettings.IntegrationApiUrl);
             var tokenRefresher = authManager.CreateTokenRefresher(new AuthenticationCredentials { ClientId = platformSettings.ClientId, ClientSecret = platformSettings.ClientSecret });
             // Note! Assumes same /TestBench endpoint in the Business API as in Nexus Business Events
-            _businessEventsClient = new BusinessEvents(platformSettings.BusinessApiUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
+            _businessEventsClient = new BusinessEvents(platformSettings.IntegrationApiUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
         }
 
         [HttpPost("Test1")]

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 using SharedKernel;
 
 namespace DataAccess.Sql
@@ -11,7 +12,7 @@ namespace DataAccess.Sql
         {
             if (!string.IsNullOrWhiteSpace(PropertiesJson))
             {
-                Properties = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(PropertiesJson);
+                Properties = JsonConvert.DeserializeObject<Dictionary<string, object>>(PropertiesJson);
             }
 
             return this;
@@ -31,7 +32,7 @@ namespace DataAccess.Sql
             FinishedAt = test.FinishedAt;
             State = test.State;
             StateMessage = test.StateMessage;
-            PropertiesJson = test.Properties != null ? System.Text.Json.JsonSerializer.Serialize(test.Properties) : null;
+            PropertiesJson = test.Properties != null ? JsonConvert.SerializeObject(test.Properties) : null;
         }
     }
 }

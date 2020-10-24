@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nexus.Link.Libraries.Core.Error.Logic;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
+using Service.Configuration;
 using Service.Logic;
 using SharedKernel;
 
@@ -11,6 +14,7 @@ namespace Service.Controllers
     /// <summary>
     /// Methods regarding specific instances of tests
     /// </summary>
+    [Authorize(AuthenticationSchemes = "Basic")]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class TestsController : ControllerBase
