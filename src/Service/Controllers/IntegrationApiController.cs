@@ -5,58 +5,62 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Nexus.Link.Authentication.Sdk;
-using Nexus.Link.BusinessEvents.Sdk;
 using Nexus.Link.BusinessEvents.Sdk.RestClients.Models;
 using Nexus.Link.Libraries.Core.Application;
 using Nexus.Link.Libraries.Core.Assert;
 using Nexus.Link.Libraries.Core.Platform.Authentication;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
+using Nexus.Link.Libraries.Web.RestClientHelper;
 using Service.Configuration;
 using Service.Logic;
+using Service.RestClients;
 using SharedKernel;
+#pragma warning disable 1591
 
 namespace Service.Controllers
 {
     /// <summary>
     /// Fulfills the exact same contract as the integration part of the business api (Event sending, Authentication, etc.)
     ///
-    /// Used to intercept events in the Capability contract tests
+    /// Used to intercept events in the Capability contract tests.
+    /// Let the capability provider services use this service as the "Integration API" for sending events.
     /// </summary>
     // :::::::::::::::::::::::::::::::::::::::::::::::::::::::
     // :::::::::::::::::: TASK: Change role ::::::::::::::::::
     // :::::::::::::::::::::::::::::::::::::::::::::::::::::::
     [Authorize(Roles = "business-api-caller")]
-    [Route("[controller]/api/v1")]
+    [Route("api/v1/IntegrationApi")]
     [ApiController]
     public class IntegrationApiController : ControllerBase
     {
-
         private readonly ITestLogic _testLogic;
-        private readonly IBusinessEvents _businessEventsClient;
+        private readonly IntegrationApiRestClient _integrationApiClient;
 
         /// <summary></summary>
         public IntegrationApiController(IConfiguration configuration, ITestLogic testLogic)
         {
             _testLogic = testLogic;
 
-            var nexusSettings = configuration.GetSection("Nexus").Get<NexusSettings>();
+            var tokenRefresher = new TokenRefresher(configuration);
             var platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
-            // Note! Assumes same /Tokens endpoint in the Integration API as in Nexus Fundamentals
-            var authManager = new NexusAuthenticationManager(nexusSettings.Tenant, platformSettings.IntegrationApiUrl);
-            var tokenRefresher = authManager.CreateTokenRefresher(new AuthenticationCredentials { ClientId = platformSettings.ClientId, ClientSecret = platformSettings.ClientSecret });
-            // Note! Assumes same /TestBench endpoint in the Integration API as in Nexus Business Events
-            _businessEventsClient = new BusinessEvents(platformSettings.IntegrationApiUrl, nexusSettings.Tenant, tokenRefresher.GetServiceClient());
+            _integrationApiClient = new IntegrationApiRestClient(new HttpSender(platformSettings.IntegrationApiUrl, tokenRefresher.GetServiceClient()));
+        }
+
+
+        [HttpPost("Authentication/Tokens")]
+        public async Task<AuthenticationToken> CreateTokenAsync(AuthenticationCredentials tokenCredentials)
+        {
+            var result = await _integrationApiClient.CreateToken(tokenCredentials.ClientId, tokenCredentials.ClientSecret);
+            return result;
         }
 
 
         /// <summary>
-        /// Captures the event and sends it to Nexus Business Events test bench
+        /// Captures the event and sends it to Nexus Business Events test bench for verification
         /// </summary>
-        [HttpPost]
-        [Route("BusinessEvents/Publish/{entityName}/{eventName}/{major}/{minor}")]
+        [HttpPost("BusinessEvents/Publish/{entityName}/{eventName}/{major}/{minor}")]
         [SwaggerGroup("IntegrationCapability/BusinessEvents")]
-        public async Task Publish(string entityName, string eventName, int major, int minor, dynamic content)
+        public async Task Publish(string entityName, string eventName, int major, int minor, JObject content)
         {
             ServiceContract.RequireNotNull(entityName, nameof(entityName));
             ServiceContract.RequireNotNull(eventName, nameof(eventName));
@@ -72,7 +76,7 @@ namespace Service.Controllers
                 {
                     var client = FulcrumApplication.Context.CallingClientName;
                     var payload = JObject.FromObject(content);
-                    var result = (PublicationTestResult)await _businessEventsClient.TestBenchPublish(entityName, eventName, major, minor, client, payload);
+                    var result = await _integrationApiClient.TestBenchPublish(entityName, eventName, major, minor, client, payload);
 
                     if (result.Verified)
                     {
@@ -91,7 +95,6 @@ namespace Service.Controllers
                 {
                     await _testLogic.SetStateAsync(test, StateEnum.Failed, e.Message);
                 }
-
             }
         }
     }

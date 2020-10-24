@@ -22,7 +22,7 @@ namespace SharedKernel
         [JsonProperty(Order = 5)]
         public DateTimeOffset? FinishedAt { get; set; }
 
-        [System.Text.Json.Serialization.JsonIgnore]
+        [JsonIgnore]
         public StateEnum InternalState { get; set; }
 
         [JsonProperty(Order = 7)] public StateEnum State => CalculateStateRecursive(this);

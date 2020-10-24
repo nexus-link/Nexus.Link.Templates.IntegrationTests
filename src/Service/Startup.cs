@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using System.IO;
-using System.Text.Json.Serialization;
 using DataAccess.Memory;
 using DataAccess.Sql;
 using DataAccess.TableStorage;
@@ -11,6 +9,8 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using Nexus.Link.Authentication.AspNet.Sdk.Handlers;
 using Nexus.Link.Libraries.Web.AspNet.Pipe.Inbound;
 using Service.Configuration;
@@ -58,12 +58,10 @@ namespace Service
                     options.EnableEndpointRouting = false;
                     options.AllowEmptyInputInBodyModelBinding = true;
                 })
-                .AddJsonOptions(options =>
+                .AddNewtonsoftJson(options =>
                 {
-                    options.JsonSerializerOptions.IgnoreNullValues = true;
-                    options.JsonSerializerOptions.WriteIndented = true;
-                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
                 });
 
             services.AddSwaggerGen(c =>

@@ -11,7 +11,7 @@ using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
 using Service.Models;
-using Service.Tests.ContractTests.Mocks;
+using Service.Tests.ContractTests.Capability1.Models;
 using SharedKernel;
 
 #pragma warning disable 1591
@@ -27,7 +27,7 @@ namespace Service.Tests.ContractTests.Capability1
 
         public Capability1TestsController(IConfiguration configuration, ITestLogic testLogic) : base(configuration, testLogic)
         {
-            var baseUri = $"{configuration["Capability1:BaseUrl"]}/api/v1";
+            var baseUri = $"{configuration["Capability1:BaseUrl"]}";
             _restclient = new Capability1RestClient(new HttpSender(baseUri));
         }
 
@@ -94,7 +94,7 @@ namespace Service.Tests.ContractTests.Capability1
             try
             {
                 // Create
-                var person = await _restclient.CreatePerson(new MockPerson {Name = "Raginaharjar"});
+                var person = await _restclient.CreatePerson(new MockPerson { Name = "Raginaharjar" });
                 if (person?.Id == null) throw new Exception("No Person was created");
                 var personId = person.Id;
 

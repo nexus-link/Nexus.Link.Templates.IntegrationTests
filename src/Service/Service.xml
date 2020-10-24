@@ -46,13 +46,16 @@
             <summary></summary>
         </member>
         <member name="P:Service.Configuration.PlatformSettings.BusinessApiUrl">
-            <summary></summary>
+            <summary>The base url to the Business API</summary>
+        </member>
+        <member name="P:Service.Configuration.PlatformSettings.IntegrationApiUrl">
+            <summary>The base url to the Integration API, where such things as event publishing, token creation and value association are</summary>
         </member>
         <member name="P:Service.Configuration.PlatformSettings.ClientId">
-            <summary></summary>
+            <summary>Credentials for accessing components within the customer's platform</summary>
         </member>
         <member name="P:Service.Configuration.PlatformSettings.ClientSecret">
-            <summary></summary>
+            <summary>Credentials for accessing components within the customer's platform</summary>
         </member>
         <member name="T:Service.Configuration.TestGrouping">
             <summary>
@@ -101,15 +104,16 @@
              <summary>
              Fulfills the exact same contract as the integration part of the business api (Event sending, Authentication, etc.)
             
-             Used to intercept events in the Capability contract tests
+             Used to intercept events in the Capability contract tests.
+             Let the capability provider services use this service as the "Integration API" for sending events.
              </summary>
         </member>
         <member name="M:Service.Controllers.IntegrationApiController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
-        <member name="M:Service.Controllers.IntegrationApiController.Publish(System.String,System.String,System.Int32,System.Int32,System.Object)">
+        <member name="M:Service.Controllers.IntegrationApiController.Publish(System.String,System.String,System.Int32,System.Int32,Newtonsoft.Json.Linq.JObject)">
             <summary>
-            Captures the event and sends it to Nexus Business Events test bench
+            Captures the event and sends it to Nexus Business Events test bench for verification
             </summary>
         </member>
         <member name="T:Service.Controllers.TestControllerBase">
@@ -269,14 +273,6 @@
             <summary>
             EXAMPLE: CRUD person entity
             </summary>
-        </member>
-        <member name="T:Service.Tests.ContractTests.Mocks.Capability1MocksController">
-            <summary>
-            Used for mocking capability providers.
-            </summary>
-            <remarks>
-            Only single instance support.
-            </remarks>
         </member>
         <member name="T:Service.Tests.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController">
             <summary>

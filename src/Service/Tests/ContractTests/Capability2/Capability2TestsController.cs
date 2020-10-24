@@ -47,7 +47,7 @@ namespace Service.Tests.ContractTests.Capability2
             var test = await TestLogic.CreateAsync("Capability 2 Test 1", parent);
 
             // TODO: Do test and update state
-            await TestLogic.SetStateAsync(test, StateEnum.Failed, "awwwhh");
+            await TestLogic.SetStateAsync(test, StateEnum.Ok, "Ohh yeah");
 
             return test;
         }
@@ -59,6 +59,7 @@ namespace Service.Tests.ContractTests.Capability2
             var test = await TestLogic.CreateAsync("Capability Y Test 2", parent);
 
             // TODO: Do test and update state
+            await TestLogic.SetStateAsync(test, StateEnum.Ok, "Done");
 
             return test;
         }
