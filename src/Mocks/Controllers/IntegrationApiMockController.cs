@@ -43,5 +43,11 @@ namespace Mocks.Controllers
             return result;
         }
 
+        [HttpPost("BusinessEvents/Publish/{entityName}/{eventName}/{major}/{minor}")]
+        public async Task PublishEvent(string entityName, string eventName, int major, int minor, string clientName, JObject payload)
+        {
+            await _businessEventsClient.PublishAsync(entityName, eventName, major, minor, clientName, payload);
+        }
+
     }
 }

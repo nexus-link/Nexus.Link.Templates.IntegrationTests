@@ -287,5 +287,15 @@
             Create a JWT through the Business API for known API user
             </summary>
         </member>
+        <member name="T:Service.Tests.PlatformConfigurationTests.Translations.BusinessApiTranslationsTestController">
+            <summary>
+            Calls the business api and verifies that values are translated between clients
+            </summary>
+        </member>
+        <member name="M:Service.Tests.PlatformConfigurationTests.Translations.BusinessApiTranslationsTestController.EnumTranslation(SharedKernel.Test)">
+            <summary>
+            Create an order as one client and get it as another
+            </summary>
+        </member>
     </members>
 </doc>

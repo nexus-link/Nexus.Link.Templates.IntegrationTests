@@ -20,8 +20,7 @@ This template is setup to run for tenant "platform-integration-test-template-ser
 
 ### TODOs
 
-* Logging
-* Stubs for Business Api tests
+* Stubs for Business Api tests with value translation
 * Stubs for Business Processes tests
 * Multi-environment support?
 

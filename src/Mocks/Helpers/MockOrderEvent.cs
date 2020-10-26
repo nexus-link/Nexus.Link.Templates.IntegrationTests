@@ -4,5 +4,6 @@
     {
         public string OrderId { get; set; }
         public int Items { get; set; }
+        public string Status { get; set; }
     }
 }

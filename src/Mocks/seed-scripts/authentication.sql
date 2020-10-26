@@ -24,3 +24,8 @@ INSERT INTO ApiUser_Role (ApiUserId, RoleId) SELECT @id, Id FROM Role WHERE Name
 SET @id = newid()
 INSERT INTO ApiUser (Id, Organization, Environment, Name, Salt, HashedSecret) VALUES (@id, @organization, @environment, 'capability1-mock', 'KLf83,mfFFffaedfe', 'K5J+My3i7zotQ7mLgmxvAri/xgcnqvaHW8+QbYtLUtg=')
 INSERT INTO ApiUser_Role (ApiUserId, RoleId) SELECT @id, Id FROM Role WHERE Name = 'business-api-caller'
+
+-- { "ClientId": "capability2-mock", "ClientSecret": "lklkf7633k" }
+SET @id = newid()
+INSERT INTO ApiUser (Id, Organization, Environment, Name, Salt, HashedSecret) VALUES (@id, @organization, @environment, 'capability2-mock', 'KLf83,mfFFffaedfe', 'K5J+My3i7zotQ7mLgmxvAri/xgcnqvaHW8+QbYtLUtg=')
+INSERT INTO ApiUser_Role (ApiUserId, RoleId) SELECT @id, Id FROM Role WHERE Name = 'business-api-caller'
