@@ -40,7 +40,7 @@ namespace Service.Configuration
 
         public async Task<AuthenticationToken> GetJwtTokenAsync()
         {
-            var key = $"{nameof(TokenRefresher)}.Token";
+            var key = $"{nameof(TokenRefresher)}.Token.{_clientCredentials.ClientId}";
             if (Cache[key] is AuthenticationToken token) return token;
             token = await _integrationApiClient.CreateToken(_clientCredentials.ClientId, _clientCredentials.ClientSecret);
             Cache.Add(key, token, DateTimeOffset.Now.AddHours(1));

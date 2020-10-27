@@ -2,17 +2,17 @@
 goto :init
 
 :mocks
-	start "Mocks" dotnet run --project src\Mocks\Mocks.csproj
+	start "Mocks" dotnet watch --project src\Mocks\Mocks.csproj run
 	set "Started=true"
 	goto :eof
 
 :service
-	start "Service" dotnet run --project src\Service\Service.csproj
+	start "Service" dotnet watch --project src\Service\Service.csproj run
 	set "Started=true"
 	goto :eof
 
 :dashboard
-	start "Dashboard" dotnet run --project src\Dashboard\Dashboard.csproj
+	start "Dashboard" dotnet watch --project src\Dashboard\Dashboard.csproj run
 	set "Started=true"
 	goto :eof
 

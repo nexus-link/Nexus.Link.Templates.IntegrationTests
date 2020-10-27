@@ -73,14 +73,14 @@ namespace Service.Tests.PlatformConfigurationTests.Translations
                 cap1Test.Properties = new Dictionary<string, object> { { "Order", createdOrder } };
                 await TestLogic.UpdateAsync(cap1Test);
                 if (createdOrder.Status != "Created") await TestLogic.SetStateAsync(cap1Test, StateEnum.Failed, "Expected Order.Status to be 'Created'");
-                else await TestLogic.SetStateAsync(test, StateEnum.Ok, "Ok");
+                else await TestLogic.SetStateAsync(cap1Test, StateEnum.Ok, "Ok");
 
                 // Fetch order as capability 2 client
                 var order = await _bapiClientAsCapability2Client.GetOrder(createdOrder.Id);
                 cap2Test.Properties = new Dictionary<string, object> { { "Order", order } };
                 await TestLogic.UpdateAsync(cap2Test);
-                if (createdOrder.Status != "New") await TestLogic.SetStateAsync(cap1Test, StateEnum.Failed, "Expected Order.Status to be 'New'");
-                else await TestLogic.SetStateAsync(test, StateEnum.Ok, "Ok");
+                if (order.Status != "New") await TestLogic.SetStateAsync(cap2Test, StateEnum.Failed, "Expected Order.Status to be 'New'");
+                else await TestLogic.SetStateAsync(cap2Test, StateEnum.Ok, "Ok");
             }
             catch (Exception e)
             {

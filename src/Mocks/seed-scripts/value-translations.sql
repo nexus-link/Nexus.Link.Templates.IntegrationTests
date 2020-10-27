@@ -10,6 +10,9 @@ EXEC CreateOrGetClient 'capability2-mock', @capability2mock OUTPUT
 DECLARE @dashboard UNIQUEIDENTIFIER
 EXEC CreateOrGetClient 'dashboard', @dashboard OUTPUT
 
+DECLARE @integrationtest UNIQUEIDENTIFIER
+EXEC CreateOrGetClient 'integration-test', @integrationtest OUTPUT
+
 ---------------------------------------------------------------------------------------------------
 -- CONCEPTS
 ---------------------------------------------------------------------------------------------------
@@ -33,6 +36,7 @@ EXEC CreateOrGetForm @conceptId, 'OrderStatusDone', @orderStatusFormDoneId OUTPU
 EXEC CreateOrGetContext @conceptId, 'capability1', 1, @contextId OUTPUT
 EXEC CreateOrUpdateClientContext @capability1mock, @conceptId, @contextId
 EXEC CreateOrUpdateClientContext @dashboard, @conceptId, @contextId
+EXEC CreateOrUpdateClientContext @integrationtest, @conceptId, @contextId
 
 EXEC CreateOrUpdateInstance @contextId, @orderStatusFormNewId, 'Created'
 EXEC CreateOrUpdateInstance @contextId, @orderStatusFormProcessingId, 'Processing'
