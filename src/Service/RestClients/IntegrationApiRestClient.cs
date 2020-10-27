@@ -15,9 +15,9 @@ namespace Service.RestClients
             // TODO: Auth
         }
 
-        public async Task PublishEvent(string entityName, string eventName, int major, int minor, JObject eventContent)
+        public async Task PublishEvent(string entityName, string eventName, int major, int minor, string client, JObject eventContent)
         {
-            var relativeUrl = $"api/v1/BusinessEvents/Publish/{entityName}/{eventName}/{major}/{minor}";
+            var relativeUrl = $"api/v1/BusinessEvents/Publish/{entityName}/{eventName}/{major}/{minor}?clientName={client}";
             await PostNoResponseContentAsync(relativeUrl, eventContent);
         }
 

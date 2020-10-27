@@ -71,9 +71,16 @@ namespace Mocks.Controllers
             order.Id = Guid.NewGuid().ToString();
             EntityStorage.TryAdd(order.Id, order);
 
-            await _integrationApiRestClient.PublishEvent("Order", "Created", 1, 0, "capability1-mock", JObject.FromObject(new MockOrderEvent { OrderId = order.Id, Items = order.Items }));
+            await _integrationApiRestClient.PublishEvent("Order", "Created", 1, 0, "capability1-mock", JObject.FromObject(new MockOrderEvent { OrderId = order.Id, Items = order.Items, Status = "Created" }));
 
             return order;
+        }
+
+        [HttpGet("OrderManagement/Orders/{id}")]
+        public dynamic GetOrder(string id)
+        {
+            if (!EntityStorage.ContainsKey(id)) throw new FulcrumNotFoundException();
+            return EntityStorage[id];
         }
     }
 }

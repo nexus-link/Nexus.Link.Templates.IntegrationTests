@@ -41,8 +41,8 @@ namespace Service.Controllers
         {
             _testLogic = testLogic;
 
-            var tokenRefresher = new TokenRefresher(configuration);
             var platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
+            var tokenRefresher = new TokenRefresher(configuration, platformSettings.ClientId, platformSettings.ClientSecret);
             _integrationApiClient = new IntegrationApiRestClient(new HttpSender(platformSettings.IntegrationApiUrl, tokenRefresher.GetServiceClient()));
         }
 
@@ -80,6 +80,7 @@ namespace Service.Controllers
 
                     if (result.Verified)
                     {
+                        await _integrationApiClient.PublishEvent(entityName, eventName, major, minor, client, payload);
                         await _testLogic.SetStateAsync(test, StateEnum.Ok, "Event intercepted and verified with BE Test bench");
                     }
                     else

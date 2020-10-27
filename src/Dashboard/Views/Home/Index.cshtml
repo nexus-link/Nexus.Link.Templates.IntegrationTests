@@ -61,7 +61,8 @@
         myChart.update();
     });
 
-    var calculateXMax = function(data) {
+    var calculateXMax = function (data) {
+        if (data.length === 0) return 5;
         const copy = [...data];
         copy.sort();
         const maxData = copy[copy.length - 1];

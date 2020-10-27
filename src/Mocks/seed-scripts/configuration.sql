@@ -6,20 +6,32 @@ DELETE FROM ServiceTenantConfiguration WHERE Organization = @Organization AND En
 
 INSERT INTO ServiceTenantConfiguration(Organization, Environment, Service, Configuration)
 	VALUES (@Organization, @Environment, 'fundamentals', '{
-        "Service": "fundamentals",
-        "Configuration": {
-            "AuthenticationConnectionString": "Server=tcp:smoketestingcompany-dbserver.database.windows.net,1433;Initial Catalog=authentication;Persist Security Info=False;User ID=db-admin;Password=NiceChair!Soft99;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-            "LoggerConnectionString": "DefaultEndpointsProtocol=https;AccountName=smoketestcompany;AccountKey=F+QXBiz3KLrUbWrqB8HbZa9y080KImcLHPumw7PuXqLGgttjhTFQ32CqycA8S3UOL0wv3rXN/N31DRZm9x0arQ==;EndpointSuffix=core.windows.net",
-            "QueueName": "platform-integration-test-template-service-logging"
-          }
-      }')
+        "AuthenticationConnectionString": "Server=tcp:smoketestingcompany-dbserver.database.windows.net,1433;Initial Catalog=authentication;Persist Security Info=False;User ID=db-admin;Password=NiceChair!Soft99;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+        "LoggerConnectionString": "DefaultEndpointsProtocol=https;AccountName=nexusplinttesttemplate;AccountKey=CGEQuE3eZvX3yeWzH5dYA5U8op206qJsEXQqCMR+RQnKGkUZeRLMW3ppPBqhaEwaXaMOfkuxvBaxRkij6jXfpA==;EndpointSuffix=core.windows.net",
+        "QueueName": "platform-integration-test-template-service-logging"
+     }')
 
+INSERT INTO ServiceTenantConfiguration(Organization, Environment, Service, Configuration)
+	VALUES (@Organization, @Environment, 'logging', '{
+        "Version": "1",
+        "LoggerConnectionString": "DefaultEndpointsProtocol=https;AccountName=nexusplinttesttemplate;AccountKey=CGEQuE3eZvX3yeWzH5dYA5U8op206qJsEXQqCMR+RQnKGkUZeRLMW3ppPBqhaEwaXaMOfkuxvBaxRkij6jXfpA==;EndpointSuffix=core.windows.net",
+        "QueueName": "platform-integration-test-template-service-logging"
+     }')
 
 INSERT INTO ServiceTenantConfiguration(Organization, Environment, Service, Configuration)
 	VALUES (@Organization, @Environment, 'businessevents', '{
-        "Service": "businessevents",
-        "Configuration": {
-            "ConnectionString": "Server=tcp:smoketestingcompany-dbserver.database.windows.net,1433;Initial Catalog=nexus-platform-integration-test-template-service-businessevents;Persist Security Info=False;User ID=db-admin;Password=NiceChair!Soft99;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
-            "VerifyPublications": true
-          }
-      }')
+        "ConnectionString": "Server=tcp:smoketestingcompany-dbserver.database.windows.net,1433;Initial Catalog=nexus-platform-integration-test-template-service-businessevents;Persist Security Info=False;User ID=db-admin;Password=NiceChair!Soft99;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+        "VerifyPublications": true
+    }')
+
+INSERT INTO ServiceTenantConfiguration(Organization, Environment, Service, Configuration)
+	VALUES (@Organization, @Environment, 'keytranslator', '{
+        "ConnectionString": "Server=tcp:smoketestingcompany-dbserver.database.windows.net,1433;Initial Catalog=nexus-platform-integration-test-template-service-translations;Persist Security Info=False;User ID=db-admin;Password=NiceChair!Soft99;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+    }')
+
+INSERT INTO ServiceTenantConfiguration(Organization, Environment, Service, Configuration)
+    VALUES (@Organization, @Environment, 'asynccaller', '{
+        "SchemaVersion": 1,
+        "ConnectionString": "DefaultEndpointsProtocol=https;AccountName=nexusplinttesttemplate;AccountKey=CGEQuE3eZvX3yeWzH5dYA5U8op206qJsEXQqCMR+RQnKGkUZeRLMW3ppPBqhaEwaXaMOfkuxvBaxRkij6jXfpA==;EndpointSuffix=core.windows.net",
+        "DefaultDeadlineTimeSpanInSeconds": 240,
+    }')

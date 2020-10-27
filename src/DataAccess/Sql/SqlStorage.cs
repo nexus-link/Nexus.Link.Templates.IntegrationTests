@@ -66,7 +66,7 @@ namespace DataAccess.Sql
         public async Task<StorageTest> ReadAsync(Guid id)
         {
             var test = await base.ReadAsync(id);
-            return test.ToStorageTest();
+            return test?.ToStorageTest();
         }
 
         public async Task UpdateAsync(StorageTest storageTest)

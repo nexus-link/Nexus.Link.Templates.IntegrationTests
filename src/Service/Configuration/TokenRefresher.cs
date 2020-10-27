@@ -18,15 +18,16 @@ namespace Service.Configuration
 {
     public class TokenRefresher : ServiceClientCredentials, ITokenRefresherWithServiceClient
     {
+        private readonly AuthenticationCredentials _clientCredentials;
         private readonly IntegrationApiRestClient _integrationApiClient;
-        private readonly PlatformSettings _platformSettings;
 
         private static readonly ObjectCache Cache = MemoryCache.Default;
 
-        public TokenRefresher(IConfiguration configuration)
+        public TokenRefresher(IConfiguration configuration, string clientId, string clientSecret)
         {
-            _platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
-            _integrationApiClient = new IntegrationApiRestClient(new HttpSender(_platformSettings.IntegrationApiUrl));
+            _clientCredentials = new AuthenticationCredentials { ClientId = clientId, ClientSecret = clientSecret };
+            var platformSettings = configuration.GetSection("Platform").Get<PlatformSettings>();
+            _integrationApiClient = new IntegrationApiRestClient(new HttpSender(platformSettings.IntegrationApiUrl));
         }
 
         public override async Task ProcessHttpRequestAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -39,9 +40,9 @@ namespace Service.Configuration
 
         public async Task<AuthenticationToken> GetJwtTokenAsync()
         {
-            var key = $"{nameof(TokenRefresher)}.Token";
+            var key = $"{nameof(TokenRefresher)}.Token.{_clientCredentials.ClientId}";
             if (Cache[key] is AuthenticationToken token) return token;
-            token = await _integrationApiClient.CreateToken(_platformSettings.ClientId, _platformSettings.ClientSecret);
+            token = await _integrationApiClient.CreateToken(_clientCredentials.ClientId, _clientCredentials.ClientSecret);
             Cache.Add(key, token, DateTimeOffset.Now.AddHours(1));
             return token;
         }
