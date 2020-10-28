@@ -2,78 +2,18 @@
     ViewData["Title"] = "Events";
 }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-
 <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
 
-<canvas id="myChart" width="400" height="400"></canvas>
 <script>
-    const SCALE_INCREMENT = 5;
+    var connection = new signalR.HubConnectionBuilder().withUrl("/testsHub").build();
 
-    var ctx = document.getElementById("myChart").getContext("2d");
-    var myChart = new Chart(ctx, {
-        type: "horizontalBar",
-        data: {
-            labels: [],
-            datasets: [{
-                label: "# of events",
-                data: [],
-                backgroundColor: [
-                    "rgba(255, 99, 132, 0.2)",
-                    "rgba(54, 162, 235, 0.2)",
-                    "rgba(255, 206, 86, 0.2)",
-                    "rgba(75, 192, 192, 0.2)",
-                    "rgba(153, 102, 255, 0.2)",
-                    "rgba(255, 159, 64, 0.2)"
-                ],
-                borderColor: [
-                    "rgba(255, 99, 132, 1)",
-                    "rgba(54, 162, 235, 1)",
-                    "rgba(255, 206, 86, 1)",
-                    "rgba(75, 192, 192, 1)",
-                    "rgba(153, 102, 255, 1)",
-                    "rgba(255, 159, 64, 1)"
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    ticks: {
-                        beginAtZero: true,
-                        stepSize: 1,
-                        suggestedMax: SCALE_INCREMENT
-                    }
-                }]
-            }
-        }
+    connection.on("Apa", function (labels, data) {
+        console.log("Apa", labels, data);
     });
 
-    var connection = new signalR.HubConnectionBuilder().withUrl("/eventsHub").build();
-
-    connection.on("NewEventsStats", function (labels, data) {
-        console.log("NewEventsStats", labels, data);
-
-        myChart.data.labels = labels;
-        myChart.data.datasets[0].data = data;
-        myChart.options.scales.xAxes[0].ticks.suggestedMax = calculateXMax(data);
-        myChart.update();
-    });
-
-    var calculateXMax = function (data) {
-        if (data.length === 0) return 5;
-        const copy = [...data];
-        copy.sort();
-        const maxData = copy[copy.length - 1];
-        return Math.floor(maxData / SCALE_INCREMENT) * SCALE_INCREMENT + SCALE_INCREMENT;
-    }
-
-    connection.start().then(function () {
-
-        })
+    connection.start().then(function () {})
         .catch(function (err) {
-            return console.error(err.toString());
+            return console.error("Connection error", err.toString());
         });
 
 </script>

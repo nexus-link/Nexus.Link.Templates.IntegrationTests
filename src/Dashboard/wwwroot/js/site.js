@@ -7,7 +7,7 @@ Site = (() => {
     return {
         resetEvents: () => {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "api/Events/Reset");
+            xhr.open("POST", "/api/Events/Reset");
             xhr.send(null);
         },
 
@@ -19,7 +19,7 @@ Site = (() => {
             ];
             const testEvent = testEvents[Math.floor(Math.random() * testEvents.length)];
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", `api/Events/${testEvent.EntityName}/${testEvent.EventName}/1`);
+            xhr.open("POST", `/api/Events/${testEvent.EntityName}/${testEvent.EventName}/1`);
             xhr.send(null);
         }
     }
