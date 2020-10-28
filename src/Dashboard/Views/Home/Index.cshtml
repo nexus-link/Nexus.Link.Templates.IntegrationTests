@@ -8,22 +8,87 @@
 
 [<a href="#" onclick="Tests.start()">Apa</a>]
 
+<div id="tests"></div>
+
 <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
 
 <script>
+    $ = (selector) => {
+        const result = document.querySelectorAll(selector);
+        if (result.length === 0) return null;
+        if (result.length === 1) return result[0];
+        return Array.from(result);
+    }
+
     const Tests = (() => {
         // SignalR
         var connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
-        connection.on("TestChanged",
-            function(test) {
-                console.log("Apa", test);
-            });
-        connection.start().then(function() {}).catch(function(err) { return console.error("Connection error", err.toString()); });
+        connection.start().then(function () { }).catch(function (err) { return console.error("Connection error", err.toString()); });
+
+        // Polling
+        let activeIntervals = [],
+            pollingEndsAt = [];
+        const pollingInterval = 1000,
+            maxPollSeconds = 6; // TODO: 120?
+
+        const endPoll = (testId) => {
+            clearInterval(activeIntervals[testId]);
+            pollingEndsAt[testId] = null;
+        };
+        const poll = (testId, endPollingAt) => {
+            pollingEndsAt[testId] = endPollingAt;
+            activeIntervals[testId] = setInterval(function () {
+                if (!activeIntervals[testId] || !pollingEndsAt[testId] || new Date > pollingEndsAt[testId]) {
+                    endPoll(testId);
+                }
+                console.log("pinging");
+                connection.invoke("UpdateStatus", testId);
+            }, pollingInterval);
+        };
+
+        // Helper: Storage
+        const getStoredTests = () => {
+            const testContextsString = sessionStorage.getItem("testContexts");
+            if (!testContextsString) return null;
+            return JSON.parse(testContextsString);
+        }
+
+        const addStoredTest = (testId, endPollingAt) => {
+            let testContexts = getStoredTests();
+            if (!testContexts) testContexts = [];
+            testContexts.push({ testId: testId, endPollingAt: endPollingAt });
+            sessionStorage.setItem("testContexts", JSON.stringify(testContexts));
+        }
+
+
+        // Rendering
+        const fullRender = (test) => {
+            console.log("fullRender", test)
+            const elementId = `test-${test.Id}`;
+            let html = `<div id="${elementId}">`;
+            html += "TEST " + test.Id;
+            html += "</div>";
+            $("#tests").append(html);
+        }
+
+        const renderTest = (test) => {
+            // Full render if not present
+            if (!document.querySelector(`#test-${test.Id}`)) fullRender(test);
+
+            // TODO: update state
+        }
+
+        // Events
+        const testChanged = (test) => {
+            console.log("TestChanged", test);
+            renderTest(test);
+        };
+        connection.on("TestChanged", testChanged);
 
         // Helper: Call dashboard API
         const callApi = (method, url, callbacks) => {
             var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
+            xhr.onreadystatechange = function () {
                 if (xhr.readyState !== 4) return;
                 if (xhr.status >= 200 && xhr.status < 300) {
                     if (callbacks && callbacks.ok) callbacks.ok(xhr);
@@ -38,21 +103,33 @@
 
         // Exposed methods
         return {
+            maybeResume: () => {
+                const testContexts = getStoredTests();
+                console.log(testContexts);
+                if (!testContexts) return;
+                testContexts.forEach((testContext) => {
+                    const endTime = new Date(testContext.endPollingAt);
+                    if (new Date < endTime) {
+                        poll(testContext.testId, endTime);
+                    }
+                });
+            },
+
             start: () => {
                 // Start the test. A callback on "TestChanged" will happen.
                 callApi("POST", "/api/Tests/Start",
                     {
                         ok: (xhr) => {
                             const testId = xhr.response;
-                            setTimeout(function() {
-                                console.log("pinging");
-                                connection.invoke("UpdateStatus", testId);
-                            }, 2000);
+                            const endPollingAt = new Date((new Date).getTime() + maxPollSeconds * 1000);
+                            poll(testId, endPollingAt);
+                            addStoredTest(testId, endPollingAt);
                         },
                         error: (xhr) => { console.log("error", xhr.status, xhr.responseText); }
                     });
-
             }
         }
     })();
+
+    Tests.maybeResume();
 </script>
