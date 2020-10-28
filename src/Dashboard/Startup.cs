@@ -1,4 +1,9 @@
+using System;
+using System.Net.Http.Headers;
+using System.Text;
+using Dashboard.Controllers;
 using Dashboard.Hubs;
+using Dashboard.Logic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +26,15 @@ namespace Dashboard
         {
             services.AddControllersWithViews();
             services.AddSignalR();
+
+            services.AddHttpClient("TestServiceClient", client =>
+            {
+                client.BaseAddress = new Uri(Configuration["PlatformTestService:BaseUrl"]);
+                var token = Base64Encode($"{Configuration["PlatformTestService:Username"]}:{Configuration["PlatformTestService:Password"]}");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", token);
+            });
+
+            services.AddSingleton<ITestLogic, TestLogic>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,5 +66,12 @@ namespace Dashboard
                 endpoints.MapHub<TestsHub>("/testsHub");
             });
         }
+
+        private static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+            return Convert.ToBase64String(plainTextBytes);
+        }
+
     }
 }

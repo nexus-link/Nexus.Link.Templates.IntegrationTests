@@ -1,19 +1,58 @@
 ﻿@{
     ViewData["Title"] = "Events";
+
+    // TODO: Lista på senast körda
+    // TODO: Kunna avbryta
+    // TODO: Local storage för vilka tester som körts/är aktiv
 }
+
+[<a href="#" onclick="Tests.start()">Apa</a>]
 
 <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
 
 <script>
-    var connection = new signalR.HubConnectionBuilder().withUrl("/testsHub").build();
+    const Tests = (() => {
+        // SignalR
+        var connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
+        connection.on("TestChanged",
+            function(test) {
+                console.log("Apa", test);
+            });
+        connection.start().then(function() {}).catch(function(err) { return console.error("Connection error", err.toString()); });
 
-    connection.on("Apa", function (labels, data) {
-        console.log("Apa", labels, data);
-    });
+        // Helper: Call dashboard API
+        const callApi = (method, url, callbacks) => {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState !== 4) return;
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    if (callbacks && callbacks.ok) callbacks.ok(xhr);
+                } else {
+                    if (callbacks && callbacks.error) callbacks.error(xhr);
+                }
+                if (callbacks && callbacks.always) callbacks.always(xhr);
+            };
+            xhr.open(method, url);
+            xhr.send();
+        }
 
-    connection.start().then(function () {})
-        .catch(function (err) {
-            return console.error("Connection error", err.toString());
-        });
+        // Exposed methods
+        return {
+            start: () => {
+                // Start the test. A callback on "TestChanged" will happen.
+                callApi("POST", "/api/Tests/Start",
+                    {
+                        ok: (xhr) => {
+                            const testId = xhr.response;
+                            setTimeout(function() {
+                                console.log("pinging");
+                                connection.invoke("UpdateStatus", testId);
+                            }, 2000);
+                        },
+                        error: (xhr) => { console.log("error", xhr.status, xhr.responseText); }
+                    });
 
+            }
+        }
+    })();
 </script>
