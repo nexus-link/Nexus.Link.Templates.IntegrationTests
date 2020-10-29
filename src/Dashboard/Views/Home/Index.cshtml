@@ -6,9 +6,65 @@
     // TODO: Local storage för vilka tester som körts/är aktiv
 }
 
-[<a href="#" onclick="Tests.start()">Apa</a>]
+<div>
+    <button class="button is-primary" onclick="Tests.start()">Apa</button>
+</div>
 
-<div id="tests"></div>
+@*<progress id="progress" class="progress is-hidden" value="0" max="100"></progress>*@
+
+<div id="tests">
+    <nav class="panel">
+        <p class="panel-heading">
+            Test result
+        </p>
+        <div class="panel-block">
+            <p class="control has-icons-left">
+                <input class="input" type="text" placeholder="Search">
+                <span class="icon is-left">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </span>
+            </p>
+        </div>
+        @*<p class="panel-tabs">
+            <a class="is-active">All</a>
+            <a>Public</a>
+            <a>Private</a>
+            <a>Sources</a>
+            <a>Forks</a>
+        </p>*@
+        <div class="panel-block">
+            <nav class="breadcrumb" aria-label="breadcrumbs">
+                <ul>
+                    <li><a href="#">Root</a></li>
+                    <li class="is-active"><a href="#">Test 1</a></li>
+                    @*<li><a href="#">Documentation</a></li>
+                    <li><a href="#">Components</a></li>
+                    <li class="is-active"><a href="#" aria-current="page">Breadcrumb</a></li>*@
+                </ul>
+            </nav>
+        </div>
+        <a class="panel-block is-flex">
+            <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>
+            <span class="is-flex is-flex-grow-2">..</span>
+            <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas fa-spinner fa-spin has-text-info"></i></span>
+        </a>
+        <a class="panel-block is-flex">
+            <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>
+            <span class="is-flex is-flex-grow-2">test 1 A</span>
+            <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas fa-spinner fa-spin has-text-info"></i></span>
+        </a>
+        <a class="panel-block is-flex">
+            <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>
+            <span class="is-flex is-flex-grow-2">test 1 B</span>
+            <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas fa-times has-text-danger-dark"></i></span>
+        </a>
+        <a class="panel-block is-flex">
+            <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>
+            <span class="is-flex is-flex-grow-2">test 1 C</span>
+            <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas fa-check has-text-success-dark"></i></span>
+        </a>
+    </nav>
+</div>
 
 <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
 
@@ -25,11 +81,17 @@
         var connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
         connection.start().then(function () { }).catch(function (err) { return console.error("Connection error", err.toString()); });
 
+        // Helper: Progress
+        const setProgressValue = (testId, value) => {
+            const progressElement = $(`#progress-${testId}`);
+            if (progressElement) progressElement.setAttribute("value", value);
+        }
+
         // Polling
         let activeIntervals = [],
             pollingEndsAt = [];
         const pollingInterval = 1000,
-            maxPollSeconds = 6; // TODO: 120?
+            maxPollSeconds = 3; // TODO: 120?
 
         const endPoll = (testId) => {
             clearInterval(activeIntervals[testId]);
@@ -43,6 +105,12 @@
                 }
                 console.log("pinging");
                 connection.invoke("UpdateStatus", testId);
+
+                let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
+                if (secondsLeft < 0) secondsLeft = 0;
+                //$(`#progress-${testId}`).classList.remove("is-hidden");
+                setProgressValue(testId, 100 - Math.ceil(100 * secondsLeft / maxPollSeconds));
+
             }, pollingInterval);
         };
 
@@ -62,18 +130,23 @@
 
 
         // Rendering
-        const fullRender = (test) => {
+        const fullRender = (test, activeTestId) => {
             console.log("fullRender", test)
             const elementId = `test-${test.Id}`;
             let html = `<div id="${elementId}">`;
-            html += "TEST " + test.Id;
+            html += `<progress id="progress-${test.Id}" class="progress" value="0" max="100"></progress>`;
+            html += "<div>TEST " + test.Name + "</div>";
+
             html += "</div>";
-            $("#tests").append(html);
+            const testElement = document.createElement("div");
+            testElement.setAttribute("id", elementId);
+            testElement.innerHTML = html;
+            $("#tests").append(testElement);
         }
 
         const renderTest = (test) => {
             // Full render if not present
-            if (!document.querySelector(`#test-${test.Id}`)) fullRender(test);
+            if (!document.querySelector(`#test-${test.Id}`)) fullRender(test, test.Id);
 
             // TODO: update state
         }
