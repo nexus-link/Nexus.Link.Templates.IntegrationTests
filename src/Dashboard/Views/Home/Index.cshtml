@@ -1,70 +1,21 @@
-﻿@{
+﻿@using SharedKernel
+@{
     ViewData["Title"] = "Events";
 
     // TODO: Lista på senast körda
     // TODO: Kunna avbryta
     // TODO: Local storage för vilka tester som körts/är aktiv
+
+    // TODO: Spinner när man klickar på knappen
+    // TODO: disabled knapp medan testet kör? eller skapas ett nytt bara?
+    // TODO: när man klickat på en "nav-*", inte kunna klicka igen tills den är klar
 }
 
 <div>
-    <button class="button is-primary" onclick="Tests.start()">Apa</button>
+    <button class="button is-primary" onclick="Tests.start()">Start test</button>
 </div>
 
-@*<progress id="progress" class="progress is-hidden" value="0" max="100"></progress>*@
-
-<div id="tests">
-    <nav class="panel">
-        <p class="panel-heading">
-            Test result
-        </p>
-        <div class="panel-block">
-            <p class="control has-icons-left">
-                <input class="input" type="text" placeholder="Search">
-                <span class="icon is-left">
-                    <i class="fas fa-search" aria-hidden="true"></i>
-                </span>
-            </p>
-        </div>
-        @*<p class="panel-tabs">
-            <a class="is-active">All</a>
-            <a>Public</a>
-            <a>Private</a>
-            <a>Sources</a>
-            <a>Forks</a>
-        </p>*@
-        <div class="panel-block">
-            <nav class="breadcrumb" aria-label="breadcrumbs">
-                <ul>
-                    <li><a href="#">Root</a></li>
-                    <li class="is-active"><a href="#">Test 1</a></li>
-                    @*<li><a href="#">Documentation</a></li>
-                    <li><a href="#">Components</a></li>
-                    <li class="is-active"><a href="#" aria-current="page">Breadcrumb</a></li>*@
-                </ul>
-            </nav>
-        </div>
-        <a class="panel-block is-flex">
-            <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>
-            <span class="is-flex is-flex-grow-2">..</span>
-            <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas fa-spinner fa-spin has-text-info"></i></span>
-        </a>
-        <a class="panel-block is-flex">
-            <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>
-            <span class="is-flex is-flex-grow-2">test 1 A</span>
-            <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas fa-spinner fa-spin has-text-info"></i></span>
-        </a>
-        <a class="panel-block is-flex">
-            <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>
-            <span class="is-flex is-flex-grow-2">test 1 B</span>
-            <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas fa-times has-text-danger-dark"></i></span>
-        </a>
-        <a class="panel-block is-flex">
-            <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>
-            <span class="is-flex is-flex-grow-2">test 1 C</span>
-            <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas fa-check has-text-success-dark"></i></span>
-        </a>
-    </nav>
-</div>
+<div id="tests"></div>
 
 <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
 
@@ -76,10 +27,128 @@
         return Array.from(result);
     }
 
+    const TestsRenderer = (() => {
+
+        const buildTestPath = (test, activeTestId, path) => {
+            path.push(test);
+            if (test.Id === activeTestId) return true;
+            if (!test.Children) return false;
+            let found = false;
+            test.Children.forEach((child) => {
+                const pathContainsActive = buildTestPath(child, activeTestId, path);
+                if (pathContainsActive) found = true;
+                else path.pop();
+            });
+            return found;
+        }
+
+        const getParent = (test, activeTestId, parent) => {
+            if (test.Id === activeTestId) return parent;
+            if (!test.Children) return null;
+            for (const child of test.Children) {
+                const x = getParent(child, activeTestId, test);
+                if (x) return x;
+            }
+            return null;
+        }
+
+        const setupEventListeners = (eventListeners) => {
+            eventListeners.forEach((ev) => {
+                $(`#${ev.elementId}`).addEventListener(ev.event, ev.func);
+            });
+        }
+
+        const navigateTo = (rootTest, activeTest) => {
+            // ReSharper disable once VariableUsedInInnerScopeBeforeDeclared
+            const navSetup = createNav(rootTest, activeTest);
+            $(`#nav-render-${rootTest.Id}`).innerHTML = navSetup.html;
+            setupEventListeners(navSetup.eventListeners);
+        }
+
+        const createAPanel = (elementId, name, state) => {
+            const iconClass = state === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (state === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
+            return `<a class="panel-block is-flex" id="${elementId}">` +
+                `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>` +
+                `  <span class="is-flex is-flex-grow-2">${name}</span>` +
+                `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
+                `</a>`;
+        }
+
+        const createNav = (rootTest, test) => {
+            const eventListeners = [];
+            let html = '<div class="panel-block">' +
+                '  <nav class="breadcrumb" aria-label="breadcrumbs">' +
+                '    <ul>';
+
+            // Bread crumbs
+            const breadCrumbs = [];
+            if (!buildTestPath(rootTest, test.Id, breadCrumbs)) throw `Unable to find bread crumbs for test ${test.Id} in test ${rootTest.Id}`;
+            breadCrumbs.forEach((crumb) => {
+                const aElementId = `crumb-${crumb.Id}`;
+                eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest, crumb); } });
+                html += `<li><a id="${aElementId}">${crumb.Name}</a></li>`;
+            });
+            html += '  </ul>' +
+                '  </nav>' +
+                '</div>';
+            if (rootTest.Id !== test.Id) {
+                const parent = getParent(rootTest, test.Id);
+                const aElementId = `nav-${parent.Id}`;
+                html += createAPanel(aElementId, "..", parent.State);
+                eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest, parent); } });
+            }
+            if (test.Children) {
+                test.Children.forEach((child) => {
+                    const aElementId = `nav-${child.Id}`;
+                    html += createAPanel(aElementId, child.Name, child.State);
+                    eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest, child); } });
+                });
+            }
+            return { html: html, eventListeners: eventListeners };
+        }
+
+        return {
+            maybeFullRender: (rootTest) => {
+                const elementId = `test-${rootTest.Id}`;
+                if (document.querySelector(`#${elementId}`)) return;
+
+                let html = `<div id="${elementId}">` +
+                    '<nav class="panel">' +
+                    '<p class="panel-heading">' +
+                    '  Test result' +
+                    '</p>' +
+                    '<div class="panel-block">' +
+                    `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
+                    '</div>' +
+                    '<div class="panel-block">' +
+                    '  <p class="control has-icons-left">' +
+                    '    <input class="input" type="text" placeholder="Search">' +
+                    '    <span class="icon is-left"><i class="fas fa-search" aria-hidden="true"></i></span>' +
+                    '  </p>' +
+                    '</div>' +
+                    `<div id="nav-render-${rootTest.Id}">`;
+
+                const navSetup = createNav(rootTest, rootTest);
+                html += navSetup.html;
+
+                html += "</div>";
+                html += '</nav>';
+
+                html += "</div>";
+                const testElement = document.createElement("div");
+                testElement.setAttribute("id", elementId);
+                testElement.innerHTML = html;
+                $("#tests").append(testElement);
+
+                setupEventListeners(navSetup.eventListeners);
+            }
+        }
+    })();
+
     const Tests = (() => {
         // SignalR
         var connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
-        connection.start().then(function () { }).catch(function (err) { return console.error("Connection error", err.toString()); });
+        connection.start().then(() => { }).catch((err) => { return console.error("Connection error", err.toString()); });
 
         // Helper: Progress
         const setProgressValue = (testId, value) => {
@@ -130,23 +199,9 @@
 
 
         // Rendering
-        const fullRender = (test, activeTestId) => {
-            console.log("fullRender", test)
-            const elementId = `test-${test.Id}`;
-            let html = `<div id="${elementId}">`;
-            html += `<progress id="progress-${test.Id}" class="progress" value="0" max="100"></progress>`;
-            html += "<div>TEST " + test.Name + "</div>";
-
-            html += "</div>";
-            const testElement = document.createElement("div");
-            testElement.setAttribute("id", elementId);
-            testElement.innerHTML = html;
-            $("#tests").append(testElement);
-        }
 
         const renderTest = (test) => {
-            // Full render if not present
-            if (!document.querySelector(`#test-${test.Id}`)) fullRender(test, test.Id);
+            TestsRenderer.maybeFullRender(test, test.Id);
 
             // TODO: update state
         }
