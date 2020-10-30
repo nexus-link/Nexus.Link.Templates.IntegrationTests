@@ -2,13 +2,8 @@
 @{
     ViewData["Title"] = "Events";
 
-    // TODO: Lista på senast körda
     // TODO: Kunna avbryta
-    // TODO: Local storage för vilka tester som körts/är aktiv
 
-    // TODO: Spinner när man klickar på knappen
-    // TODO: disabled knapp medan testet kör? eller skapas ett nytt bara?
-    // TODO: när man klickat på en "nav-*", inte kunna klicka igen tills den är klar
 }
 
 <nav class="level mt-2">
@@ -22,7 +17,20 @@
     </div>
 
     <div class="level-right">
-        TODO: dropdown
+        <div class="dropdown is-right" onclick="this.classList.toggle('is-active')">
+            <div>
+                <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                    <span>History</span>
+                    <span class="icon is-small">
+                        <i class="fas fa-angle-down" aria-hidden="true"></i>
+                    </span>
+                </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                <div id="history-dropdown-content" class="dropdown-content">
+                </div>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -30,260 +38,307 @@
 
 @section Scripts
 {
-<script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
 
-<script>
-    const TestsRenderer = (() => {
-        const rootTests = [];
+    <script>
+        const TestsRenderer = (() => {
+            const rootTests = [];
 
-        const buildTestPath = (test, activeTestId, path) => {
-            path.push(test);
-            if (test.Id === activeTestId) return true;
-            if (!test.Children) return false;
-            let found = false;
-            test.Children.forEach((child) => {
-                const pathContainsActive = buildTestPath(child, activeTestId, path);
-                if (pathContainsActive) found = true;
-                else path.pop();
-            });
-            return found;
-        }
-
-        const getParent = (test, activeTestId, parent) => {
-            if (test.Id === activeTestId) return parent;
-            if (!test.Children) return null;
-            for (const child of test.Children) {
-                const x = getParent(child, activeTestId, test);
-                if (x) return x;
-            }
-            return null;
-        }
-
-        const setupEventListeners = (eventListeners) => {
-            eventListeners.forEach((ev) => {
-                $(`#${ev.elementId}`).addEventListener(ev.event, ev.func);
-            });
-        }
-
-        let navigating = false;
-        const navigateTo = (rootTestId, activeTest) => {
-            if (navigating) return;
-            navigating = true;
-
-            const rootTest = rootTests[rootTestId].root;
-            rootTests[rootTestId].active = activeTest;
-
-            // ReSharper disable once VariableUsedInInnerScopeBeforeDeclared
-            const navSetup = createNav(rootTest, activeTest);
-            $(`#nav-render-${rootTest.Id}`).innerHTML = navSetup.html;
-            setupEventListeners(navSetup.eventListeners);
-
-            navigating = false;
-        }
-
-        const createAPanel = (elementId, name, state, disableLink) => {
-            const iconClass = state === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (state === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
-            const itemClass = disableLink ? "fa-vial" : "fa-folder";
-            return `<a class="panel-block is-flex" id="${elementId}" ${disableLink ? "style='cursor:auto'" : ""}>` +
-                `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
-                `  <span class="is-flex is-flex-grow-2">${name}</span>` +
-                `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
-                `</a>`;
-        }
-
-        const createNav = (rootTest, test) => {
-            const eventListeners = [];
-            let html = '<div class="panel-block">' +
-                '  <nav class="breadcrumb" aria-label="breadcrumbs">' +
-                '    <ul>';
-
-            // Bread crumbs
-            const breadCrumbs = [];
-            if (!buildTestPath(rootTest, test.Id, breadCrumbs)) throw `Unable to find bread crumbs for test ${test.Id} in test ${rootTest.Id}`;
-            breadCrumbs.forEach((crumb) => {
-                const aElementId = `crumb-${crumb.Id}`;
-                eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, crumb); } });
-                html += `<li><a id="${aElementId}">${crumb.Name}</a></li>`;
-            });
-            html += '  </ul>' +
-                '  </nav>' +
-                '</div>';
-            if (rootTest.Id !== test.Id) {
-                const parent = getParent(rootTest, test.Id);
-                const aElementId = `nav-${parent.Id}`;
-                html += createAPanel(aElementId, "..", parent.State);
-                eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
-            }
-            if (test.Children) {
+            const buildTestPath = (test, activeTestId, path) => {
+                path.push(test);
+                if (test.Id === activeTestId) return true;
+                if (!test.Children) return false;
+                let found = false;
                 test.Children.forEach((child) => {
-                    const aElementId = `nav-${child.Id}`;
-                    html += createAPanel(aElementId, child.Name, child.State, child.Children == null);
-                    if (child.Children) {
-                        eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, child); } });
-                    }
+                    const pathContainsActive = buildTestPath(child, activeTestId, path);
+                    if (pathContainsActive) found = true;
+                    else path.pop();
+                });
+                return found;
+            }
+
+            const getParent = (test, activeTestId, parent) => {
+                if (test.Id === activeTestId) return parent;
+                if (!test.Children) return null;
+                for (const child of test.Children) {
+                    const x = getParent(child, activeTestId, test);
+                    if (x) return x;
+                }
+                return null;
+            }
+
+            const setupEventListeners = (eventListeners) => {
+                eventListeners.forEach((ev) => {
+                    $(`#${ev.elementId}`).addEventListener(ev.event, ev.func);
                 });
             }
-            return { html: html, eventListeners: eventListeners };
-        }
 
-        return {
-            maybeFullRender: (rootTest) => {
-                rootTests[rootTest.Id] = { root: rootTest, active: rootTest };
+            let navigating = false;
+            const navigateTo = (rootTestId, activeTest) => {
+                if (navigating) return;
+                navigating = true;
 
-                const elementId = `test-${rootTest.Id}`;
-                if (document.querySelector(`#${elementId}`)) return false;
+                const rootTest = rootTests[rootTestId].root;
+                rootTests[rootTestId].active = activeTest;
 
-                let html = `<div id="${elementId}" class="mt-2">` +
-                    '<nav class="panel">' +
-                    '<p class="panel-heading">' +
-                    `  Test result ${rootTest.CreatedAt}` +
-                    '</p>' +
-                    '<div class="panel-block">' +
-                    `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
-                    '</div>' +
-                    '<div class="panel-block">' +
-                    // TODO: Enable search
-                    '  <p class="control has-icons-left">' +
-                    '    <input class="input" type="text" placeholder="Search">' +
-                    '    <span class="icon is-left"><i class="fas fa-search" aria-hidden="true"></i></span>' +
-                    '  </p>' +
-                    '</div>' +
-                    `<div id="nav-render-${rootTest.Id}">`;
-
-                const navSetup = createNav(rootTest, rootTest);
-                html += navSetup.html;
-
-                html += "</div>";
-                html += '</nav>';
-
-                html += "</div>";
-                const testElement = document.createElement("div");
-                testElement.setAttribute("id", elementId);
-                testElement.innerHTML = html;
-                $("#tests").append(testElement);
-
+                // ReSharper disable once VariableUsedInInnerScopeBeforeDeclared
+                const navSetup = createNav(rootTest, activeTest);
+                $(`#nav-render-${rootTest.Id}`).innerHTML = navSetup.html;
                 setupEventListeners(navSetup.eventListeners);
 
-                return true;
-            },
-
-            renderState: (rootTest) => {
-                rootTests[rootTest.Id].root = rootTest;
-                navigateTo(rootTest.Id, rootTests[rootTest.Id].active);
-            },
-
-            createTestMenu: (testContexts) => {
-
-            }
-        }
-    })();
-
-    const Tests = (() => {
-        // SignalR
-        const connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
-        connection.start().then(() => { }).catch((err) => { return console.error("Connection error", err.toString()); });
-
-        // Helper: Progress
-        const setProgressValue = (testId, value) => {
-            const progressElement = $(`#progress-${testId}`);
-            if (progressElement) progressElement.setAttribute("value", value);
-        }
-
-        // Polling
-        let activeIntervals = [],
-            pollingEndsAt = [];
-        const pollingInterval = 1000,
-            maxPollSeconds = 16; // TODO: 120?
-
-        const endPoll = (testId) => {
-            clearInterval(activeIntervals[testId]);
-            pollingEndsAt[testId] = null;
-            setProgressValue(testId, 100);
-        };
-        const poll = (testId, endPollingAt) => {
-            pollingEndsAt[testId] = endPollingAt;
-            activeIntervals[testId] = setInterval(function () {
-                if (!activeIntervals[testId] || !pollingEndsAt[testId] || new Date > pollingEndsAt[testId]) {
-                    endPoll(testId);
-                }
-                console.log("pinging");
-                connection.invoke("UpdateStatus", testId);
-
-                let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
-                if (secondsLeft < 0) secondsLeft = 0;
-                setProgressValue(testId, 100 - Math.ceil(100 * secondsLeft / maxPollSeconds));
-
-            }, pollingInterval);
-        };
-
-        // Events
-        const testChanged = (testId, test) => {
-            if (!test) {
-                console.log(`Test no longer available: ${testId}`);
-                endPoll(testId);
-                Storage.removeTest(testId);
-                return;
+                navigating = false;
             }
 
-            console.log("TestChanged", test.State, test);
-            if (!TestsRenderer.maybeFullRender(test)) TestsRenderer.renderState(test);
-            if (test.State === "@StateEnum.Ok") endPoll(test.Id);
-        };
-        connection.on("TestChanged", testChanged);
+            const createAPanel = (elementId, name, state, disableLink) => {
+                const iconClass = state === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (state === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
+                const itemClass = disableLink ? "fa-vial" : "fa-folder";
+                return `<a class="panel-block is-flex" id="${elementId}" ${disableLink ? "style='cursor:auto'" : ""}>` +
+                    `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
+                    `  <span class="is-flex is-flex-grow-2">${name}</span>` +
+                    `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
+                    `</a>`;
+            }
 
-        // Exposed methods
-        return {
+            const createNav = (rootTest, test) => {
+                const eventListeners = [];
+                let html = '<div class="panel-block">' +
+                    '  <nav class="breadcrumb" aria-label="breadcrumbs">' +
+                    '    <ul>';
 
-            maybeResume: () => {
-                const testContexts = Storage.getTests();
-                console.log("Previous tests", testContexts);
-                if (!testContexts) return;
-
-                let spliceTo = null;
-                testContexts.forEach((testContext, index) => {
-                    const endTime = new Date(testContext.endPollingAt);
-                    // Check for ongoing test
-                    if (new Date < endTime) poll(testContext.testId, endTime);
-                    // Prune old tests. Use same purge time as in PurgeJob
-                    else if (endTime < new Date((new Date).getTime() - 7 * 24 * 60 * 60 * 1000)) {
-                        spliceTo = index + 1;
-                    }
+                // Bread crumbs
+                const breadCrumbs = [];
+                if (!buildTestPath(rootTest, test.Id, breadCrumbs)) throw `Unable to find bread crumbs for test ${test.Id} in test ${rootTest.Id}`;
+                breadCrumbs.forEach((crumb) => {
+                    const aElementId = `crumb-${crumb.Id}`;
+                    eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, crumb); } });
+                    html += `<li><a id="${aElementId}">${crumb.Name}</a></li>`;
                 });
-                if (spliceTo) {
-                    testContexts.splice(0, spliceTo);
-                    Storage.storeTests(testContexts);
+                html += '  </ul>' +
+                    '  </nav>' +
+                    '</div>';
+                if (rootTest.Id !== test.Id) {
+                    const parent = getParent(rootTest, test.Id);
+                    const aElementId = `nav-${parent.Id}`;
+                    html += createAPanel(aElementId, "..", parent.State);
+                    eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
                 }
-                TestsRenderer.createTestMenu(testContexts);
-            },
-
-            start: () => {
-                $("#start-button").setAttribute("disabled", "disabled");
-                $("#start-button span").classList.add("is-hidden");
-                $("#start-button svg").classList.remove("is-hidden");
-
-                // Start the test. A callback on "TestChanged" will happen.
-                Api.call("POST", "/api/Tests/Start",
-                    {
-                        ok: (xhr) => {
-                            const testId = xhr.response;
-                            const endPollingAt = new Date((new Date).getTime() + maxPollSeconds * 1000);
-                            poll(testId, endPollingAt);
-                            Storage.addTest(testId, endPollingAt);
-                        },
-                        error: (xhr) => {
-                            console.log("error", xhr.status, xhr.responseText);
-                            // TODO: Tell user
-                        },
-                        always: (xhr) => {
-                            $("#start-button svg").classList.add("is-hidden");
-                            $("#start-button span").classList.remove("is-hidden");
-                            $("#start-button").removeAttribute("disabled");
+                if (test.Children) {
+                    test.Children.forEach((child) => {
+                        const aElementId = `nav-${child.Id}`;
+                        html += createAPanel(aElementId, child.Name, child.State, child.Children == null);
+                        if (child.Children) {
+                            eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, child); } });
                         }
                     });
+                }
+                return { html: html, eventListeners: eventListeners };
             }
-        }
-    })();
 
-    Tests.maybeResume();
-</script>
+            return {
+                maybeFullRender: (rootTest) => {
+                    rootTests[rootTest.Id] = { root: rootTest, active: rootTest };
+
+                    const elementId = `test-${rootTest.Id}`;
+                    if (document.querySelector(`#${elementId}`)) return false;
+
+                    let html = '<nav class="panel">' +
+                        '<p class="panel-heading">' +
+                        `  Test result ${rootTest.CreatedAt}` +
+                        '</p>' +
+                        '<div class="panel-block">' +
+                        `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
+                        '</div>' +
+                        '<div class="panel-block">' +
+                        '  <nav class="level" style="width:100%">' +
+                        '    <div class="level-left">' +
+                        '      <div class="level-item">' +
+                        '        <div class="field has-addons">' +
+                        // TODO: Enable search
+                        '          <p class="control has-icons-left">' +
+                        '            <input class="input" type="text" placeholder="Search">' +
+                        '            <span class="icon is-left"><i class="fas fa-search" aria-hidden="true"></i></span>' +
+                        '          </p>' +
+                        '        </div>' +
+                        '      </div>' +
+                        '    </div>' +
+                        '    <div class="level-right">' +
+                        `      <p class="level-item"><button class="button" onclick="TestsRenderer.deleteTestElement('${rootTest.Id}')">Hide</button></p>` +
+                        `      <p class="level-item"><button class="button" onclick="Tests.poll('${rootTest.Id}', 10)">Poll 10 s</button></p>` +
+                        `      <p class="level-item"><button class="button" onclick="Tests.deleteTest('${rootTest.Id}')">Delete</button></p>` +
+                        '    </div>' +
+                        '  </nav>' +
+                        '</div>' +
+                        `<div id="nav-render-${rootTest.Id}">`;
+
+                    const navSetup = createNav(rootTest, rootTest);
+                    html += navSetup.html;
+
+                    html += "</div>";
+                    html += '</nav>';
+
+                    const testElement = document.createElement("div");
+                    testElement.setAttribute("id", elementId);
+                    testElement.classList.add("mt-2");
+                    testElement.innerHTML = html;
+                    $("#tests").append(testElement);
+
+                    setupEventListeners(navSetup.eventListeners);
+
+                    return true;
+                },
+
+                renderState: (rootTest) => {
+                    rootTests[rootTest.Id].root = rootTest;
+                    navigateTo(rootTest.Id, rootTests[rootTest.Id].active);
+                },
+
+                createTestMenu: (testContexts) => {
+                    let html = "";
+                    if (testContexts) {
+                        testContexts.reverse().forEach((testContext) => {
+                            html += `<a class="dropdown-item" onclick="Tests.load('${testContext.testId}')">${testContext.endPollingAt}</a>`;
+                        });
+                    }
+                    $("#history-dropdown-content").innerHTML = html;
+                },
+
+                deleteTestElement: (rootTestId) => {
+                    const test = $(`#test-${rootTestId}`);
+                    if (test) test.remove();
+                }
+            }
+        })();
+
+        const Tests = (() => {
+            // SignalR
+            const connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
+            connection.start().then(() => {}).catch((err) => { return console.error("Connection error", err.toString()); });
+
+            // Helper: Progress
+            const setProgressValue = (testId, value) => {
+                const progressElement = $(`#progress-${testId}`);
+                if (progressElement) progressElement.setAttribute("value", value);
+            }
+
+            // Polling
+            let activeIntervals = [],
+                pollingEndsAt = [];
+            const pollingInterval = 1000,
+                maxPollSeconds = 16; // TODO: 120?
+
+            const endPoll = (testId) => {
+                if (activeIntervals[testId]) clearInterval(activeIntervals[testId]);
+                if (pollingEndsAt[testId]) pollingEndsAt[testId] = null;
+                setProgressValue(testId, 100);
+            };
+            const poll = (testId, endPollingAt) => {
+                pollingEndsAt[testId] = endPollingAt;
+                activeIntervals[testId] = setInterval(function() {
+                    if (!activeIntervals[testId] || !pollingEndsAt[testId] || new Date > pollingEndsAt[testId]) {
+                        endPoll(testId);
+                    }
+                    console.log("pinging");
+                    connection.invoke("UpdateStatus", testId);
+
+                    let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
+                    if (secondsLeft < 0) secondsLeft = 0;
+                    setProgressValue(testId, 100 - Math.ceil(100 * secondsLeft / maxPollSeconds));
+
+                },
+                pollingInterval);
+            };
+
+            // Events
+            const testChanged = (testId, test) => {
+                if (!test) {
+                    console.log(`Test no longer available: ${testId}`);
+                    endPoll(testId);
+                    Storage.removeTest(testId);
+                    return;
+                }
+
+                console.log("TestChanged", test.State, test);
+                if (!TestsRenderer.maybeFullRender(test)) TestsRenderer.renderState(test);
+                if (test.State === "@StateEnum.Ok") endPoll(test.Id);
+            };
+            connection.on("TestChanged", testChanged);
+
+            // Exposed methods
+            return {
+                maybeResume: () => {
+                    const testContexts = Storage.getTests();
+                    console.log("Previous tests", testContexts);
+                    if (!testContexts) return;
+
+                    let spliceTo = null;
+                    testContexts.forEach((testContext, index) => {
+                        const endTime = new Date(testContext.endPollingAt);
+                        // Check for ongoing test
+                        if (new Date < endTime) {
+                            poll(testContext.testId, endTime);
+                        }
+                        // Prune old tests. Use same purge time as in PurgeJob
+                        else if (endTime < new Date((new Date).getTime() - 7 * 24 * 60 * 60 * 1000)) {
+                            spliceTo = index + 1;
+                        }
+                    });
+                    if (spliceTo) {
+                        testContexts.splice(0, spliceTo);
+                        Storage.storeTests(testContexts);
+                    }
+                    TestsRenderer.createTestMenu(testContexts);
+                },
+
+                start: () => {
+                    $("#start-button").setAttribute("disabled", "disabled");
+                    $("#start-button span").classList.add("is-hidden");
+                    $("#start-button svg").classList.remove("is-hidden");
+
+                    // Start the test. A callback on "TestChanged" will happen.
+                    Api.call("POST",
+                        "/api/Tests/Start",
+                        {
+                            ok: (xhr) => {
+                                const testId = xhr.response;
+                                const endPollingAt = new Date((new Date).getTime() + maxPollSeconds * 1000);
+                                poll(testId, endPollingAt);
+                                Storage.addTest(testId, endPollingAt);
+                                const testContexts = Storage.getTests();
+                                TestsRenderer.createTestMenu(testContexts);
+                            },
+                            error: (xhr) => {
+                                console.log("error", xhr.status, xhr.responseText);
+                                alert("Unable to start a test. See console for details.")
+                            },
+                            always: (xhr) => {
+                                $("#start-button svg").classList.add("is-hidden");
+                                $("#start-button span").classList.remove("is-hidden");
+                                $("#start-button").removeAttribute("disabled");
+                            }
+                        });
+                },
+
+                load: (testId) => {
+                    connection.invoke("UpdateStatus", testId);
+                },
+
+                poll: (testId, seconds) => {
+                    const endPollingAt = new Date((new Date).getTime() + seconds * 1000);
+                    poll(testId, endPollingAt);
+                },
+
+                deleteTest: (testId) => {
+                    if (confirm("Are you sure?")) {
+                        endPoll(testId);
+                        TestsRenderer.deleteTestElement(testId);
+                        Storage.removeTest(testId);
+                        const testContexts = Storage.getTests();
+                        TestsRenderer.createTestMenu(testContexts);
+                    }
+                }
+            }
+        })();
+
+        Tests.maybeResume();
+    </script>
 }

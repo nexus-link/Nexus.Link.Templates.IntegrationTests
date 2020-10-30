@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Text.Json;
+using System.Threading.Tasks;
 using Dashboard.Hubs;
 using Dashboard.Logic;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,6 @@ namespace Dashboard.Controllers
             _testLogic = testLogic;
         }
 
-
         [HttpPost("Start")]
         [Produces("text/plain")]
         public async Task<string> StartTest()
@@ -29,6 +29,5 @@ namespace Dashboard.Controllers
             await _hubContext.Clients.All.SendAsync("TestChanged", testId, test);
             return testId;
         }
-
     }
 }
