@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dashboard.Hubs;
@@ -18,14 +20,14 @@ namespace Dashboard.Controllers
             _hubContext = hubContext;
         }
 
-        private static readonly ConcurrentDictionary<string, int> Stats = new ConcurrentDictionary<string, int>();
+        private static readonly ConcurrentDictionary<string, Stat> Stats = new ConcurrentDictionary<string, Stat>();
 
         [HttpPost("{entityName}/{eventName}/{major}")]
         public async Task Subscribe(string entityName, string eventName, int major)
         {
             var key = $"{entityName}/{eventName}";
-            if (!Stats.TryGetValue(key, out _)) Stats.TryAdd(key, 0);
-            Stats[key]++;
+            if (!Stats.TryGetValue(key, out _)) Stats.TryAdd(key, new Stat());
+            Stats[key].Count++;
 
             await SendSignal();
         }
@@ -40,8 +42,20 @@ namespace Dashboard.Controllers
 
         private async Task SendSignal()
         {
-            var ordered = Stats.OrderBy(x => x.Key.ToLowerInvariant()).ToDictionary(x => x.Key, x => x.Value);
-            await _hubContext.Clients.All.SendAsync("NewEventsStats", ordered.Keys, ordered.Values);
+            var ordered = GetOrderedStats();
+            var counts = ordered.Values.Select(x => x.Count);
+            await _hubContext.Clients.All.SendAsync("NewEventsStats", ordered.Keys, counts);
         }
+
+        public static Dictionary<string, Stat> GetOrderedStats()
+        {
+            return Stats.OrderBy(x => x.Value.FirstEncounter).ToDictionary(x => x.Key, x => x.Value);
+        }
+    }
+
+    public class Stat
+    {
+        public int Count { get; set; }
+        public DateTimeOffset FirstEncounter { get; set; } = DateTimeOffset.Now;
     }
 }

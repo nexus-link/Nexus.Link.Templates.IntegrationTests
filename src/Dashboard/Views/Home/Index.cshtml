@@ -1,79 +1,406 @@
-﻿@{
+﻿@using SharedKernel
+@{
     ViewData["Title"] = "Events";
 }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+<nav class="level mt-2">
+    <div class="level-left">
+        <div class="level-item">
+            <button id="start-button" class="button is-primary" onclick="Tests.start()">
+                <span>Start test</span>
+                <i class="fas fa-spin fa-spinner is-hidden"></i>
+            </button>
+        </div>
+    </div>
 
-<script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+    <div class="level-right">
+        <div class="dropdown is-right" onclick="this.classList.toggle('is-active')">
+            <div>
+                <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                    <span>History</span>
+                    <span class="icon is-small">
+                        <i class="fas fa-angle-down" aria-hidden="true"></i>
+                    </span>
+                </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                <div id="history-dropdown-content" class="dropdown-content">
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
 
-<canvas id="myChart" width="400" height="400"></canvas>
-<script>
-    const SCALE_INCREMENT = 5;
+<div id="tests"></div>
 
-    var ctx = document.getElementById("myChart").getContext("2d");
-    var myChart = new Chart(ctx, {
-        type: "horizontalBar",
-        data: {
-            labels: [],
-            datasets: [{
-                label: "# of events",
-                data: [],
-                backgroundColor: [
-                    "rgba(255, 99, 132, 0.2)",
-                    "rgba(54, 162, 235, 0.2)",
-                    "rgba(255, 206, 86, 0.2)",
-                    "rgba(75, 192, 192, 0.2)",
-                    "rgba(153, 102, 255, 0.2)",
-                    "rgba(255, 159, 64, 0.2)"
-                ],
-                borderColor: [
-                    "rgba(255, 99, 132, 1)",
-                    "rgba(54, 162, 235, 1)",
-                    "rgba(255, 206, 86, 1)",
-                    "rgba(75, 192, 192, 1)",
-                    "rgba(153, 102, 255, 1)",
-                    "rgba(255, 159, 64, 1)"
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    ticks: {
-                        beginAtZero: true,
-                        stepSize: 1,
-                        suggestedMax: SCALE_INCREMENT
-                    }
-                }]
+@section Scripts
+{
+    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
+
+    <script>
+        const TestsRenderer = (() => {
+            const rootTests = [];
+
+            const setupEventListeners = (eventListeners) => {
+                eventListeners.forEach((ev) => {
+                    $(`#${ev.elementId}`).addEventListener(ev.event, ev.func);
+                });
             }
-        }
-    });
 
-    var connection = new signalR.HubConnectionBuilder().withUrl("/eventsHub").build();
+            let navigating = false;
+            const navigateTo = (rootTestId, activeTest) => {
+                if (navigating) return;
+                navigating = true;
 
-    connection.on("NewEventsStats", function (labels, data) {
-        console.log("NewEventsStats", labels, data);
+                const rootTest = rootTests[rootTestId].root;
+                rootTests[rootTestId].active = activeTest;
 
-        myChart.data.labels = labels;
-        myChart.data.datasets[0].data = data;
-        myChart.options.scales.xAxes[0].ticks.suggestedMax = calculateXMax(data);
-        myChart.update();
-    });
+                $(`#search-${rootTest.Id}`).value = "";
 
-    var calculateXMax = function (data) {
-        if (data.length === 0) return 5;
-        const copy = [...data];
-        copy.sort();
-        const maxData = copy[copy.length - 1];
-        return Math.floor(maxData / SCALE_INCREMENT) * SCALE_INCREMENT + SCALE_INCREMENT;
-    }
+                // ReSharper disable once VariableUsedInInnerScopeBeforeDeclared
+                const navSetup = createNav(rootTest, activeTest);
+                $(`#nav-render-${rootTest.Id}`).innerHTML = navSetup.html;
+                setupEventListeners(navSetup.eventListeners);
 
-    connection.start().then(function () {
+                navigating = false;
+            }
 
-        })
-        .catch(function (err) {
-            return console.error(err.toString());
-        });
+            const createAPanel = (elementId, name, state, testProperties, disableLink) => {
+                const iconClass = state === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (state === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
+                const itemClass = disableLink ? "fa-vial" : "fa-folder";
+                let html = `<a class="panel-block is-flex" id="${elementId}" ${disableLink ? "style='cursor:auto'" : ""}>` +
+                    `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
+                    `  <span class="is-flex is-flex-grow-2">${name}</span>`;
+                if (testProperties) {
+                    html += `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem" onclick="Modals.open('${elementId}-properties')"><i class="fas fa-ellipsis-h"></i></span>`;
+                    html += `<div class="modal" id="${elementId}-properties">
+                      <div class="modal-background"></div>
+                      <div class="modal-card">
+                        <header class="modal-card-head">
+                          <p class="modal-card-title">Test properties</p>
+                          <button class="delete" aria-label="close" onclick="Modals.closeAll()"></button>
+                        </header>
+                        <section class="modal-card-body">
+                            <code style="white-space:pre-wrap">${JSON.stringify(testProperties, null, 2)}</code>
+                        </section>
+                        <footer class="modal-card-foot"></footer>
+                      </div>
+                    </div>`;
+                }
+                html += `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
+                    `</a>`;
+                return html;
+            }
 
-</script>
+            const createNavElements = (rootTestId, tests, eventListeners) => {
+                if (!tests) return "";
+
+                let html = "";
+                tests.forEach((test) => {
+                    const aElementId = `nav-${test.Id}`;
+                    html += createAPanel(aElementId, test.Name, test.State, test.Properties, test.Children == null);
+                    if (test.Children) {
+                        eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTestId, test); } });
+                    }
+                });
+                return html;
+            }
+
+            const createNav = (rootTest, test) => {
+                const eventListeners = [];
+                let html = '<div class="panel-block">' +
+                    '  <nav class="breadcrumb" aria-label="breadcrumbs">' +
+                    '    <ul>';
+
+                // Bread crumbs
+                const breadCrumbs = [];
+                if (!Tests.buildTestPath(rootTest, test.Id, breadCrumbs)) throw `Unable to find bread crumbs for test ${test.Id} in test ${rootTest.Id}`;
+                breadCrumbs.forEach((crumb) => {
+                    const aElementId = `crumb-${crumb.Id}`;
+                    eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, crumb); } });
+                    html += `<li><a id="${aElementId}">${crumb.Name}</a></li>`;
+                });
+                html += '  </ul>' +
+                    '  </nav>' +
+                    '</div>';
+                if (rootTest.Id !== test.Id) {
+                    const parent = Tests.getParent(rootTest, test.Id);
+                    const aElementId = `nav-${parent.Id}`;
+                    html += createAPanel(aElementId, "..", parent.State, parent.Properties);
+                    eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
+                }
+                html += createNavElements(rootTest.Id, test.Children, eventListeners);
+                return { html: html, eventListeners: eventListeners };
+            }
+
+            const searchTests = (test, searchFor, matches) => {
+                const lowerSearch = searchFor.toLowerCase();
+                if (test.Name.toLowerCase().indexOf(lowerSearch) !== -1
+                    || (test.Properties && JSON.stringify(test.Properties).toLowerCase().indexOf(lowerSearch) !== -1)) {
+                    matches.push(test);
+                }
+                if (test.Children) {
+                    test.Children.forEach((child) => {
+                        searchTests(child, searchFor, matches);
+                    });
+                }
+            }
+
+            const search = (rootTestId, searchFor) => {
+                const rootTest = rootTests[rootTestId].root;
+
+                if (!searchFor) {
+                    navigateTo(rootTestId, rootTest);
+                    return;
+                }
+
+                const matches = [];
+                searchTests(rootTest, searchFor, matches);
+
+                const eventListeners = [];
+                const html = createNavElements(rootTest.Id, matches, eventListeners);
+
+                $(`#nav-render-${rootTest.Id}`).innerHTML = html;
+                setupEventListeners(eventListeners);
+            }
+
+            return {
+                maybeFullRender: (rootTest) => {
+                    rootTests[rootTest.Id] = { root: rootTest, active: rootTest };
+
+                    const elementId = `test-${rootTest.Id}`;
+                    if (document.querySelector(`#${elementId}`)) return false;
+
+                    console.log(rootTest, rootTest.CreatedAt)
+                    let html = '<nav class="panel">' +
+                        '<div class="panel-heading">' +
+                        `  <p class="is-size-4">Test result</p>` +
+                        `  <p class="is-size-6">${Site.prettyPrintDateTime(rootTest.CreatedAt)}</p>` +
+                        '</div>' +
+                        '<div class="panel-block">' +
+                        `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
+                        '</div>' +
+                        '<div class="panel-block">' +
+                        '  <nav class="level" style="width:100%">' +
+                        '    <div class="level-left">' +
+                        '      <div class="level-item">' +
+                        '        <div class="field has-addons">' +
+                        '          <p class="control has-icons-left">' +
+                        `            <input class="input" type="text" placeholder="Search" id="search-${rootTest.Id}" onkeyup="TestsRenderer.search('${rootTest.Id}', this.value)">` +
+                        '            <span class="icon is-left"><i class="fas fa-search" aria-hidden="true"></i></span>' +
+                        '          </p>' +
+                        '        </div>' +
+                        '      </div>' +
+                        '    </div>' +
+                        '    <div class="level-right">' +
+                        `      <p class="level-item"><button class="button" onclick="TestsRenderer.deleteTestElement('${rootTest.Id}')">Hide</button></p>` +
+                        `      <p class="level-item"><button class="button" onclick="Tests.poll('${rootTest.Id}', 10)">Poll 10 s</button></p>` +
+                        `      <p class="level-item"><button class="button" onclick="Tests.deleteTest('${rootTest.Id}')">Delete</button></p>` +
+                        '    </div>' +
+                        '  </nav>' +
+                        '</div>' +
+                        `<div id="nav-render-${rootTest.Id}">`;
+
+                    const navSetup = createNav(rootTest, rootTest);
+                    html += navSetup.html;
+
+                    html += "</div>";
+                    html += '</nav>';
+
+                    const testElement = document.createElement("div");
+                    testElement.setAttribute("id", elementId);
+                    testElement.classList.add("mt-2");
+                    testElement.innerHTML = html;
+                    $("#tests").append(testElement);
+
+                    setupEventListeners(navSetup.eventListeners);
+
+                    return true;
+                },
+
+                renderState: (rootTest) => {
+                    rootTests[rootTest.Id].root = rootTest;
+                    navigateTo(rootTest.Id, rootTests[rootTest.Id].active);
+                },
+
+                createTestMenu: (testContexts) => {
+                    let html = "";
+                    if (testContexts) {
+                        testContexts.reverse().forEach((testContext) => {
+                            html += `<a class="dropdown-item" onclick="Tests.load('${testContext.testId}')">${Site.prettyPrintDateTime(testContext.createdAt)}</a>`;
+                        });
+                    }
+                    $("#history-dropdown-content").innerHTML = html;
+                },
+
+                deleteTestElement: (rootTestId) => {
+                    const test = $(`#test-${rootTestId}`);
+                    if (test) test.remove();
+                },
+
+                search: (rootTestId, searchFor) => {
+                    search(rootTestId, searchFor);
+                }
+            }
+        })();
+
+        const Tests = (() => {
+            // SignalR
+            const connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
+            connection.start().then(() => {}).catch((err) => { return console.error("Connection error", err.toString()); });
+
+            // Helper: Progress
+            const setProgressValue = (testId, value) => {
+                const progressElement = $(`#progress-${testId}`);
+                if (progressElement) progressElement.setAttribute("value", value);
+            }
+
+            // Polling
+            let activeIntervals = [],
+                pollingEndsAt = [];
+            const pollingInterval = 1000,
+                maxPollSeconds = 120;
+
+            const endPoll = (testId) => {
+                if (activeIntervals[testId]) clearInterval(activeIntervals[testId]);
+                if (pollingEndsAt[testId]) pollingEndsAt[testId] = null;
+                setProgressValue(testId, 100);
+            };
+            const poll = (testId, endPollingAt) => {
+                pollingEndsAt[testId] = endPollingAt;
+                activeIntervals[testId] = setInterval(function() {
+                        if (!activeIntervals[testId] || !pollingEndsAt[testId] || new Date > pollingEndsAt[testId]) {
+                            endPoll(testId);
+                        }
+                        console.log("pinging");
+                        connection.invoke("UpdateStatus", testId);
+
+                        let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
+                        if (secondsLeft < 0) secondsLeft = 0;
+                        setProgressValue(testId, 100 - Math.ceil(100 * secondsLeft / maxPollSeconds));
+
+                    },
+                    pollingInterval);
+            };
+
+            // Events
+            connection.on("TestChanged", (testId, test) => {
+                if (!test) {
+                    console.log(`Test no longer available: ${testId}`);
+                    endPoll(testId);
+                    Storage.removeTest(testId);
+                    return;
+                }
+                if (!Storage.getTest(testId)) return;
+
+                console.log("TestChanged", test.State, test);
+                if (!TestsRenderer.maybeFullRender(test)) TestsRenderer.renderState(test);
+                if (test.State === "@StateEnum.Ok") endPoll(test.Id);
+            });
+
+            // Test navigation
+            const buildTestPath = (test, activeTestId, path) => {
+                path.push(test);
+                if (test.Id === activeTestId) return true;
+                if (!test.Children) return false;
+                let found = false;
+                test.Children.forEach((child) => {
+                    const pathContainsActive = buildTestPath(child, activeTestId, path);
+                    if (pathContainsActive) found = true;
+                    else path.pop();
+                });
+                return found;
+            }
+
+            const getParent = (test, activeTestId, parent) => {
+                if (test.Id === activeTestId) return parent;
+                if (!test.Children) return null;
+                for (const child of test.Children) {
+                    const x = getParent(child, activeTestId, test);
+                    if (x) return x;
+                }
+                return null;
+            }
+
+            // Exposed methods
+            return {
+                maybeResume: () => {
+                    const testContexts = Storage.getTests();
+                    console.log("Previous tests", testContexts);
+                    if (!testContexts) return;
+
+                    let spliceTo = null;
+                    testContexts.forEach((testContext, index) => {
+                        const endTime = new Date(testContext.endPollingAt);
+                        // Check for ongoing test
+                        if (new Date < endTime) {
+                            poll(testContext.testId, endTime);
+                        }
+                        // Prune old tests. Use same purge time as in PurgeJob
+                        else if (endTime < new Date((new Date).getTime() - 7 * 24 * 60 * 60 * 1000)) {
+                            spliceTo = index + 1;
+                        }
+                    });
+                    if (spliceTo) {
+                        testContexts.splice(0, spliceTo);
+                        Storage.storeTests(testContexts);
+                    }
+                    TestsRenderer.createTestMenu(testContexts);
+                },
+
+                start: () => {
+                    $("#start-button").setAttribute("disabled", "disabled");
+                    $("#start-button span").classList.add("is-hidden");
+                    $("#start-button svg").classList.remove("is-hidden");
+
+                    // Start the test. A callback on "TestChanged" will happen.
+                    Api.call("POST",
+                        "/api/Tests/Start",
+                        {
+                            ok: (xhr) => {
+                                const test = JSON.parse(xhr.response);
+                                const endPollingAt = new Date((new Date).getTime() + maxPollSeconds * 1000);
+                                poll(test.Id, endPollingAt);
+                                Storage.addTest(test.Id, test.CreatedAt, endPollingAt);
+                                const testContexts = Storage.getTests();
+                                TestsRenderer.createTestMenu(testContexts);
+                            },
+                            error: (xhr) => {
+                                console.log("error", xhr.status, xhr.responseText);
+                                alert("Unable to start a test. See console for details.")
+                            },
+                            always: (xhr) => {
+                                $("#start-button svg").classList.add("is-hidden");
+                                $("#start-button span").classList.remove("is-hidden");
+                                $("#start-button").removeAttribute("disabled");
+                            }
+                        });
+                },
+
+                load: (testId) => {
+                    connection.invoke("UpdateStatus", testId);
+                },
+
+                poll: (testId, seconds) => {
+                    const endPollingAt = new Date((new Date).getTime() + seconds * 1000);
+                    poll(testId, endPollingAt);
+                },
+
+                deleteTest: (testId) => {
+                    if (confirm("Are you sure?")) {
+                        endPoll(testId);
+                        TestsRenderer.deleteTestElement(testId);
+                        Storage.removeTest(testId);
+                        const testContexts = Storage.getTests();
+                        TestsRenderer.createTestMenu(testContexts);
+                    }
+                },
+
+                buildTestPath: buildTestPath,
+                getParent: getParent
+            }
+        })();
+
+        Tests.maybeResume();
+    </script>
+}

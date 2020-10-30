@@ -19,6 +19,12 @@ namespace Dashboard.Controllers
             return View();
         }
 
+        public IActionResult Graphs()
+        {
+            var stats = EventsController.GetOrderedStats();
+            return View(stats);
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
