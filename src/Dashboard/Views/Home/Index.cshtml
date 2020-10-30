@@ -78,6 +78,8 @@
                 const rootTest = rootTests[rootTestId].root;
                 rootTests[rootTestId].active = activeTest;
 
+                $(`#search-${rootTest.Id}`).value = "";
+
                 // ReSharper disable once VariableUsedInInnerScopeBeforeDeclared
                 const navSetup = createNav(rootTest, activeTest);
                 $(`#nav-render-${rootTest.Id}`).innerHTML = navSetup.html;
@@ -94,6 +96,21 @@
                     `  <span class="is-flex is-flex-grow-2">${name}</span>` +
                     `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
                     `</a>`;
+                // TODO: Icon if has properties + popup
+            }
+
+            const createNavElements = (rootTestId, tests, eventListeners) => {
+                if (!tests) return "";
+
+                let html = "";
+                tests.forEach((test) => {
+                    const aElementId = `nav-${test.Id}`;
+                    html += createAPanel(aElementId, test.Name, test.State, test.Children == null);
+                    if (test.Children) {
+                        eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTestId, test); } });
+                    }
+                });
+                return html;
             }
 
             const createNav = (rootTest, test) => {
@@ -119,16 +136,34 @@
                     html += createAPanel(aElementId, "..", parent.State);
                     eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
                 }
+                html += createNavElements(rootTest.Id, test.Children, eventListeners);
+                return { html: html, eventListeners: eventListeners };
+            }
+
+            const searchTests = (test, searchFor, matches) => {
+                const lowerSearch = searchFor.toLowerCase();
+                if (test.Name.toLowerCase().indexOf(lowerSearch) !== -1
+                    || (test.Properties && JSON.stringify(test.Properties).toLowerCase().indexOf(lowerSearch) !== -1)) {
+                    matches.push(test);
+                }
                 if (test.Children) {
                     test.Children.forEach((child) => {
-                        const aElementId = `nav-${child.Id}`;
-                        html += createAPanel(aElementId, child.Name, child.State, child.Children == null);
-                        if (child.Children) {
-                            eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, child); } });
-                        }
+                        searchTests(child, searchFor, matches);
                     });
                 }
-                return { html: html, eventListeners: eventListeners };
+            }
+
+            const search = (rootTestId, searchFor) => {
+                const rootTest = rootTests[rootTestId].root;
+
+                const matches = [];
+                searchTests(rootTest, searchFor, matches);
+
+                const eventListeners = [];
+                const html = createNavElements(rootTest.Id, matches, eventListeners);
+
+                $(`#nav-render-${rootTest.Id}`).innerHTML = html;
+                setupEventListeners(eventListeners);
             }
 
             return {
@@ -152,9 +187,8 @@
                         '    <div class="level-left">' +
                         '      <div class="level-item">' +
                         '        <div class="field has-addons">' +
-                        // TODO: Enable search
                         '          <p class="control has-icons-left">' +
-                        '            <input class="input" type="text" placeholder="Search">' +
+                        `            <input class="input" type="text" placeholder="Search" id="search-${rootTest.Id}" onkeyup="TestsRenderer.search('${rootTest.Id}', this.value)">` +
                         '            <span class="icon is-left"><i class="fas fa-search" aria-hidden="true"></i></span>' +
                         '          </p>' +
                         '        </div>' +
@@ -204,6 +238,10 @@
                 deleteTestElement: (rootTestId) => {
                     const test = $(`#test-${rootTestId}`);
                     if (test) test.remove();
+                },
+
+                search: (rootTestId, searchFor) => {
+                    search(rootTestId, searchFor);
                 }
             }
         })();
