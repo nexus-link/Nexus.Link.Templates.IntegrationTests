@@ -11,9 +11,20 @@
     // TODO: när man klickat på en "nav-*", inte kunna klicka igen tills den är klar
 }
 
-<div>
-    <button class="button is-primary" onclick="Tests.start()">Start test</button>
-</div>
+<nav class="level mt-2">
+    <div class="level-left">
+        <div class="level-item">
+            <button id="start-button" class="button is-primary" onclick="Tests.start()">
+                <span>Start test</span>
+                <i class="fas fa-spin fa-spinner is-hidden"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="level-right">
+        TODO: dropdown
+    </div>
+</nav>
 
 <div id="tests"></div>
 
@@ -59,7 +70,11 @@
             });
         }
 
+        let navigating = false;
         const navigateTo = (rootTestId, activeTest) => {
+            if (navigating) return;
+            navigating = true;
+
             const rootTest = rootTests[rootTestId].root;
             rootTests[rootTestId].active = activeTest;
 
@@ -67,6 +82,8 @@
             const navSetup = createNav(rootTest, activeTest);
             $(`#nav-render-${rootTest.Id}`).innerHTML = navSetup.html;
             setupEventListeners(navSetup.eventListeners);
+
+            navigating = false;
         }
 
         const createAPanel = (elementId, name, state, disableLink) => {
@@ -121,10 +138,10 @@
                 const elementId = `test-${rootTest.Id}`;
                 if (document.querySelector(`#${elementId}`)) return false;
 
-                let html = `<div id="${elementId}">` +
+                let html = `<div id="${elementId}" class="mt-2">` +
                     '<nav class="panel">' +
                     '<p class="panel-heading">' +
-                    '  Test result' +
+                    `  Test result ${rootTest.CreatedAt}` +
                     '</p>' +
                     '<div class="panel-block">' +
                     `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
@@ -158,13 +175,74 @@
             renderState: (rootTest) => {
                 rootTests[rootTest.Id].root = rootTest;
                 navigateTo(rootTest.Id, rootTests[rootTest.Id].active);
+            },
+
+            createTestMenu: (testContexts) => {
+
             }
+        }
+    })();
+
+    const Storage = (() => {
+
+        const storageKey = "testContexts";
+
+        const getTests = () => {
+            const testContextsString = sessionStorage.getItem(storageKey);
+            if (!testContextsString) return null;
+            return JSON.parse(testContextsString);
+        }
+        const storeTests = (testContexts) => {
+            sessionStorage.setItem(storageKey, JSON.stringify(testContexts));
+        }
+        const addTest = (testId, endPollingAt) => {
+            let testContexts = getTests();
+            if (!testContexts) testContexts = [];
+            testContexts.push({ testId: testId, endPollingAt: endPollingAt });
+            storeTests(testContexts);
+        }
+        const removeTest = (testId) => {
+            const testContexts = getTests();
+            if (!testContexts) return;
+            let spliceAt = null;
+            testContexts.forEach((test, index) => {
+                if (test.testId === testId) spliceAt = index;
+            });
+            if (spliceAt != null) {
+                testContexts.splice(spliceAt, 1);
+                storeTests(testContexts);
+            }
+        }
+
+        return {
+            getTests: getTests,
+            storeTests: storeTests,
+            addTest: addTest,
+            removeTest: removeTest
+        }
+    })();
+
+    const Api = (() => {
+
+        call: (method, url, callbacks) => {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) return;
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    if (callbacks && callbacks.ok) callbacks.ok(xhr);
+                } else {
+                    if (callbacks && callbacks.error) callbacks.error(xhr);
+                }
+                if (callbacks && callbacks.always) callbacks.always(xhr);
+            };
+            xhr.open(method, url);
+            xhr.send();
         }
     })();
 
     const Tests = (() => {
         // SignalR
-        var connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
+        const connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
         connection.start().then(() => { }).catch((err) => { return console.error("Connection error", err.toString()); });
 
         // Helper: Progress
@@ -177,7 +255,7 @@
         let activeIntervals = [],
             pollingEndsAt = [];
         const pollingInterval = 1000,
-            maxPollSeconds = 6; // TODO: 120?
+            maxPollSeconds = 16; // TODO: 120?
 
         const endPoll = (testId) => {
             clearInterval(activeIntervals[testId]);
@@ -200,73 +278,69 @@
             }, pollingInterval);
         };
 
-        // Helper: Storage
-        const getStoredTests = () => {
-            const testContextsString = sessionStorage.getItem("testContexts");
-            if (!testContextsString) return null;
-            return JSON.parse(testContextsString);
-        }
-
-        const addStoredTest = (testId, endPollingAt) => {
-            let testContexts = getStoredTests();
-            if (!testContexts) testContexts = [];
-            testContexts.push({ testId: testId, endPollingAt: endPollingAt });
-            sessionStorage.setItem("testContexts", JSON.stringify(testContexts));
-        }
-
         // Events
-        const testChanged = (test) => {
+        const testChanged = (testId, test) => {
+            if (!test) {
+                console.log(`Test no longer available: ${testId}`);
+                endPoll(testId);
+                Storage.removeTest(testId);
+                return;
+            }
+
             console.log("TestChanged", test.State, test);
-            if (!TestsRenderer.maybeFullRender(test)) {
-                TestsRenderer.renderState(test);
-            }
-            if (test.State === "@StateEnum.Ok") {
-                endPoll(test.Id);
-            }
+            if (!TestsRenderer.maybeFullRender(test)) TestsRenderer.renderState(test);
+            if (test.State === "@StateEnum.Ok") endPoll(test.Id);
         };
         connection.on("TestChanged", testChanged);
 
-        // Helper: Call dashboard API
-        const callApi = (method, url, callbacks) => {
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState !== 4) return;
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    if (callbacks && callbacks.ok) callbacks.ok(xhr);
-                } else {
-                    if (callbacks && callbacks.error) callbacks.error(xhr);
-                }
-                if (callbacks && callbacks.always) callbacks.always(xhr);
-            };
-            xhr.open(method, url);
-            xhr.send();
-        }
-
         // Exposed methods
         return {
+
             maybeResume: () => {
-                const testContexts = getStoredTests();
-                console.log(testContexts);
+                const testContexts = Storage.getTests();
+                console.log("Previous tests", testContexts);
                 if (!testContexts) return;
-                testContexts.forEach((testContext) => {
+
+                let spliceTo = null;
+                testContexts.forEach((testContext, index) => {
                     const endTime = new Date(testContext.endPollingAt);
-                    if (new Date < endTime) {
-                        poll(testContext.testId, endTime);
+                    // Check for ongoing test
+                    if (new Date < endTime) poll(testContext.testId, endTime);
+                    // Prune old tests. Use same purge time as in PurgeJob
+                    else if (endTime < new Date((new Date).getTime() - 7 * 24 * 60 * 60 * 1000)) {
+                        spliceTo = index + 1;
                     }
                 });
+                if (spliceTo) {
+                    testContexts.splice(0, spliceTo);
+                    Storage.storeTests(testContexts);
+                }
+                TestsRenderer.createTestMenu(testContexts);
             },
 
             start: () => {
+                $("#start-button").setAttribute("disabled", "disabled");
+                $("#start-button span").classList.add("is-hidden");
+                $("#start-button svg").classList.remove("is-hidden");
+
                 // Start the test. A callback on "TestChanged" will happen.
-                callApi("POST", "/api/Tests/Start",
+                Api.call("POST", "/api/Tests/Start",
                     {
                         ok: (xhr) => {
                             const testId = xhr.response;
                             const endPollingAt = new Date((new Date).getTime() + maxPollSeconds * 1000);
                             poll(testId, endPollingAt);
-                            addStoredTest(testId, endPollingAt);
+                            Storage.addTest(testId, endPollingAt);
                         },
-                        error: (xhr) => { console.log("error", xhr.status, xhr.responseText); }
+                        error: (xhr) => {
+                            console.log("error", xhr.status, xhr.responseText);
+                            // TODO: Tell user
+                        },
+                        always: (xhr) => {
+                            $("#start-button svg").classList.add("is-hidden");
+                            $("#start-button span").classList.remove("is-hidden");
+                            $("#start-button").removeAttribute("disabled");
+                        }
                     });
             }
         }

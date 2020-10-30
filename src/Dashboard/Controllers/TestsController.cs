@@ -1,7 +1,4 @@
-﻿using System;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Dashboard.Hubs;
 using Dashboard.Logic;
 using Microsoft.AspNetCore.Mvc;
@@ -28,8 +25,9 @@ namespace Dashboard.Controllers
         public async Task<string> StartTest()
         {
             var test = await _testLogic.CreateTest();
-            await _hubContext.Clients.All.SendAsync("TestChanged", test);
-            return test.GetProperty("Id").GetString();
+            var testId = test.GetProperty("Id").GetString();
+            await _hubContext.Clients.All.SendAsync("TestChanged", testId, test);
+            return testId;
         }
 
     }

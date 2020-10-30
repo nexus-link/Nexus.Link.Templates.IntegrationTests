@@ -15,8 +15,15 @@ namespace Dashboard.Hubs
 
         public async Task UpdateStatus(string testId)
         {
-            var test = await _testLogic.GetTestAsync(testId);
-            await Clients.All.SendAsync("TestChanged", test);
+            try
+            {
+                var test = await _testLogic.GetTestAsync(testId);
+                await Clients.All.SendAsync("TestChanged", testId, test);
+            }
+            catch (System.Exception)
+            {
+                await Clients.All.SendAsync("TestChanged", testId, null);
+            }
         }
     }
 }
