@@ -41,29 +41,6 @@
         const TestsRenderer = (() => {
             const rootTests = [];
 
-            const buildTestPath = (test, activeTestId, path) => {
-                path.push(test);
-                if (test.Id === activeTestId) return true;
-                if (!test.Children) return false;
-                let found = false;
-                test.Children.forEach((child) => {
-                    const pathContainsActive = buildTestPath(child, activeTestId, path);
-                    if (pathContainsActive) found = true;
-                    else path.pop();
-                });
-                return found;
-            }
-
-            const getParent = (test, activeTestId, parent) => {
-                if (test.Id === activeTestId) return parent;
-                if (!test.Children) return null;
-                for (const child of test.Children) {
-                    const x = getParent(child, activeTestId, test);
-                    if (x) return x;
-                }
-                return null;
-            }
-
             const setupEventListeners = (eventListeners) => {
                 eventListeners.forEach((ev) => {
                     $(`#${ev.elementId}`).addEventListener(ev.event, ev.func);
@@ -137,7 +114,7 @@
 
                 // Bread crumbs
                 const breadCrumbs = [];
-                if (!buildTestPath(rootTest, test.Id, breadCrumbs)) throw `Unable to find bread crumbs for test ${test.Id} in test ${rootTest.Id}`;
+                if (!Tests.buildTestPath(rootTest, test.Id, breadCrumbs)) throw `Unable to find bread crumbs for test ${test.Id} in test ${rootTest.Id}`;
                 breadCrumbs.forEach((crumb) => {
                     const aElementId = `crumb-${crumb.Id}`;
                     eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, crumb); } });
@@ -147,7 +124,7 @@
                     '  </nav>' +
                     '</div>';
                 if (rootTest.Id !== test.Id) {
-                    const parent = getParent(rootTest, test.Id);
+                    const parent = Tests.getParent(rootTest, test.Id);
                     const aElementId = `nav-${parent.Id}`;
                     html += createAPanel(aElementId, "..", parent.State, parent.Properties);
                     eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
@@ -321,6 +298,30 @@
                 if (test.State === "@StateEnum.Ok") endPoll(test.Id);
             });
 
+            // Test navigation
+            const buildTestPath = (test, activeTestId, path) => {
+                path.push(test);
+                if (test.Id === activeTestId) return true;
+                if (!test.Children) return false;
+                let found = false;
+                test.Children.forEach((child) => {
+                    const pathContainsActive = buildTestPath(child, activeTestId, path);
+                    if (pathContainsActive) found = true;
+                    else path.pop();
+                });
+                return found;
+            }
+
+            const getParent = (test, activeTestId, parent) => {
+                if (test.Id === activeTestId) return parent;
+                if (!test.Children) return null;
+                for (const child of test.Children) {
+                    const x = getParent(child, activeTestId, test);
+                    if (x) return x;
+                }
+                return null;
+            }
+
             // Exposed methods
             return {
                 maybeResume: () => {
@@ -393,7 +394,10 @@
                         const testContexts = Storage.getTests();
                         TestsRenderer.createTestMenu(testContexts);
                     }
-                }
+                },
+
+                buildTestPath: buildTestPath,
+                getParent: getParent
             }
         })();
 
