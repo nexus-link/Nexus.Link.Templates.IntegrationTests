@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Dashboard.Logic;
 using Microsoft.AspNetCore.SignalR;
 
@@ -20,7 +21,7 @@ namespace Dashboard.Hubs
                 var test = await _testLogic.GetTestAsync(testId);
                 await Clients.All.SendAsync("TestChanged", testId, test);
             }
-            catch (System.Exception)
+            catch (Exception)
             {
                 await Clients.All.SendAsync("TestChanged", testId, null);
             }

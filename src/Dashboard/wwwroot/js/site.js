@@ -80,12 +80,22 @@ const Storage = (() => {
             storeTests(testContexts);
         }
     }
+    const getTest = (testId) => {
+        const testContexts = getTests();
+        if (!testContexts) return null;
+        for (let i = 0; i < testContexts.length; i++) {
+            const context = testContexts[i];
+            if (context.testId === testId) return context;
+        }
+        return null;
+    }
 
     return {
         getTests: getTests,
         storeTests: storeTests,
         addTest: addTest,
-        removeTest: removeTest
+        removeTest: removeTest,
+        getTest: getTest
     }
 })();
 

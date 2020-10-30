@@ -1,9 +1,6 @@
 ﻿@using SharedKernel
 @{
     ViewData["Title"] = "Events";
-
-    // TODO: Kunna avbryta
-
 }
 
 <nav class="level mt-2">
@@ -224,7 +221,7 @@
             let activeIntervals = [],
                 pollingEndsAt = [];
             const pollingInterval = 1000,
-                maxPollSeconds = 16; // TODO: 120?
+                maxPollSeconds = 120;
 
             const endPoll = (testId) => {
                 if (activeIntervals[testId]) clearInterval(activeIntervals[testId]);
@@ -249,19 +246,19 @@
             };
 
             // Events
-            const testChanged = (testId, test) => {
+            connection.on("TestChanged", (testId, test) => {
                 if (!test) {
                     console.log(`Test no longer available: ${testId}`);
                     endPoll(testId);
                     Storage.removeTest(testId);
                     return;
                 }
+                if (!Storage.getTest(testId)) return;
 
                 console.log("TestChanged", test.State, test);
                 if (!TestsRenderer.maybeFullRender(test)) TestsRenderer.renderState(test);
                 if (test.State === "@StateEnum.Ok") endPoll(test.Id);
-            };
-            connection.on("TestChanged", testChanged);
+            });
 
             // Exposed methods
             return {
