@@ -104,3 +104,30 @@ const Storage = (() => {
     }
 })();
 
+const Modals = (() => {
+    var rootEl = document.documentElement;
+
+    const closeModals = () => {
+        rootEl.classList.remove("is-clipped");
+        const modals = document.querySelectorAll(".modal");
+        modals.forEach((modal) => {
+            modal.classList.remove("is-active");
+        });
+    }
+
+    document.addEventListener("keydown", function (event) {
+        const e = event || window.event;
+        if (e.keyCode === 27) closeModals();
+    });
+
+    return {
+        open: (id) => {
+            rootEl.classList.add("is-clipped");
+            $(`#${id}`).classList.add("is-active");
+        },
+
+        closeAll: () => {
+            closeModals();
+        }
+    }
+})();

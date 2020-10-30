@@ -88,15 +88,31 @@
                 navigating = false;
             }
 
-            const createAPanel = (elementId, name, state, disableLink) => {
+            const createAPanel = (elementId, name, state, testProperties, disableLink) => {
                 const iconClass = state === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (state === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
                 const itemClass = disableLink ? "fa-vial" : "fa-folder";
-                return `<a class="panel-block is-flex" id="${elementId}" ${disableLink ? "style='cursor:auto'" : ""}>` +
+                let html = `<a class="panel-block is-flex" id="${elementId}" ${disableLink ? "style='cursor:auto'" : ""}>` +
                     `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
-                    `  <span class="is-flex is-flex-grow-2">${name}</span>` +
-                    `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
+                    `  <span class="is-flex is-flex-grow-2">${name}</span>`;
+                if (testProperties) {
+                    html += `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem" onclick="Modals.open('${elementId}-properties')"><i class="fas fa-ellipsis-h"></i></span>`;
+                    html += `<div class="modal" id="${elementId}-properties">
+                      <div class="modal-background"></div>
+                      <div class="modal-card">
+                        <header class="modal-card-head">
+                          <p class="modal-card-title">Test properties</p>
+                          <button class="delete" aria-label="close" onclick="Modals.closeAll()"></button>
+                        </header>
+                        <section class="modal-card-body">
+                            <code style="white-space:pre-wrap">${JSON.stringify(testProperties, null, 2)}</code>
+                        </section>
+                        <footer class="modal-card-foot"></footer>
+                      </div>
+                    </div>`;
+                }
+                html += `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
                     `</a>`;
-                // TODO: Icon if has properties + popup
+                return html;
             }
 
             const createNavElements = (rootTestId, tests, eventListeners) => {
@@ -105,7 +121,7 @@
                 let html = "";
                 tests.forEach((test) => {
                     const aElementId = `nav-${test.Id}`;
-                    html += createAPanel(aElementId, test.Name, test.State, test.Children == null);
+                    html += createAPanel(aElementId, test.Name, test.State, test.Properties, test.Children == null);
                     if (test.Children) {
                         eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTestId, test); } });
                     }
@@ -133,7 +149,7 @@
                 if (rootTest.Id !== test.Id) {
                     const parent = getParent(rootTest, test.Id);
                     const aElementId = `nav-${parent.Id}`;
-                    html += createAPanel(aElementId, "..", parent.State);
+                    html += createAPanel(aElementId, "..", parent.State, parent.Properties);
                     eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
                 }
                 html += createNavElements(rootTest.Id, test.Children, eventListeners);
@@ -155,6 +171,11 @@
 
             const search = (rootTestId, searchFor) => {
                 const rootTest = rootTests[rootTestId].root;
+
+                if (!searchFor) {
+                    navigateTo(rootTestId, rootTest);
+                    return;
+                }
 
                 const matches = [];
                 searchTests(rootTest, searchFor, matches);
@@ -271,18 +292,18 @@
             const poll = (testId, endPollingAt) => {
                 pollingEndsAt[testId] = endPollingAt;
                 activeIntervals[testId] = setInterval(function() {
-                    if (!activeIntervals[testId] || !pollingEndsAt[testId] || new Date > pollingEndsAt[testId]) {
-                        endPoll(testId);
-                    }
-                    console.log("pinging");
-                    connection.invoke("UpdateStatus", testId);
+                        if (!activeIntervals[testId] || !pollingEndsAt[testId] || new Date > pollingEndsAt[testId]) {
+                            endPoll(testId);
+                        }
+                        console.log("pinging");
+                        connection.invoke("UpdateStatus", testId);
 
-                    let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
-                    if (secondsLeft < 0) secondsLeft = 0;
-                    setProgressValue(testId, 100 - Math.ceil(100 * secondsLeft / maxPollSeconds));
+                        let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
+                        if (secondsLeft < 0) secondsLeft = 0;
+                        setProgressValue(testId, 100 - Math.ceil(100 * secondsLeft / maxPollSeconds));
 
-                },
-                pollingInterval);
+                    },
+                    pollingInterval);
             };
 
             // Events
