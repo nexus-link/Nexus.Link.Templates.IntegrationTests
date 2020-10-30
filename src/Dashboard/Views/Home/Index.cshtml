@@ -28,6 +28,7 @@
     }
 
     const TestsRenderer = (() => {
+        const rootTests = [];
 
         const buildTestPath = (test, activeTestId, path) => {
             path.push(test);
@@ -58,17 +59,21 @@
             });
         }
 
-        const navigateTo = (rootTest, activeTest) => {
+        const navigateTo = (rootTestId, activeTest) => {
+            const rootTest = rootTests[rootTestId].root;
+            rootTests[rootTestId].active = activeTest;
+
             // ReSharper disable once VariableUsedInInnerScopeBeforeDeclared
             const navSetup = createNav(rootTest, activeTest);
             $(`#nav-render-${rootTest.Id}`).innerHTML = navSetup.html;
             setupEventListeners(navSetup.eventListeners);
         }
 
-        const createAPanel = (elementId, name, state) => {
+        const createAPanel = (elementId, name, state, disableLink) => {
             const iconClass = state === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (state === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
-            return `<a class="panel-block is-flex" id="${elementId}">` +
-                `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas fa-vial" aria-hidden="true"></i></span>` +
+            const itemClass = disableLink ? "fa-vial" : "fa-folder";
+            return `<a class="panel-block is-flex" id="${elementId}" ${disableLink ? "style='cursor:auto'" : ""}>` +
+                `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
                 `  <span class="is-flex is-flex-grow-2">${name}</span>` +
                 `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
                 `</a>`;
@@ -85,7 +90,7 @@
             if (!buildTestPath(rootTest, test.Id, breadCrumbs)) throw `Unable to find bread crumbs for test ${test.Id} in test ${rootTest.Id}`;
             breadCrumbs.forEach((crumb) => {
                 const aElementId = `crumb-${crumb.Id}`;
-                eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest, crumb); } });
+                eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, crumb); } });
                 html += `<li><a id="${aElementId}">${crumb.Name}</a></li>`;
             });
             html += '  </ul>' +
@@ -95,13 +100,15 @@
                 const parent = getParent(rootTest, test.Id);
                 const aElementId = `nav-${parent.Id}`;
                 html += createAPanel(aElementId, "..", parent.State);
-                eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest, parent); } });
+                eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
             }
             if (test.Children) {
                 test.Children.forEach((child) => {
                     const aElementId = `nav-${child.Id}`;
-                    html += createAPanel(aElementId, child.Name, child.State);
-                    eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest, child); } });
+                    html += createAPanel(aElementId, child.Name, child.State, child.Children == null);
+                    if (child.Children) {
+                        eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, child); } });
+                    }
                 });
             }
             return { html: html, eventListeners: eventListeners };
@@ -109,8 +116,10 @@
 
         return {
             maybeFullRender: (rootTest) => {
+                rootTests[rootTest.Id] = { root: rootTest, active: rootTest };
+
                 const elementId = `test-${rootTest.Id}`;
-                if (document.querySelector(`#${elementId}`)) return;
+                if (document.querySelector(`#${elementId}`)) return false;
 
                 let html = `<div id="${elementId}">` +
                     '<nav class="panel">' +
@@ -121,6 +130,7 @@
                     `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
                     '</div>' +
                     '<div class="panel-block">' +
+                    // TODO: Enable search
                     '  <p class="control has-icons-left">' +
                     '    <input class="input" type="text" placeholder="Search">' +
                     '    <span class="icon is-left"><i class="fas fa-search" aria-hidden="true"></i></span>' +
@@ -141,6 +151,13 @@
                 $("#tests").append(testElement);
 
                 setupEventListeners(navSetup.eventListeners);
+
+                return true;
+            },
+
+            renderState: (rootTest) => {
+                rootTests[rootTest.Id].root = rootTest;
+                navigateTo(rootTest.Id, rootTests[rootTest.Id].active);
             }
         }
     })();
@@ -160,11 +177,12 @@
         let activeIntervals = [],
             pollingEndsAt = [];
         const pollingInterval = 1000,
-            maxPollSeconds = 3; // TODO: 120?
+            maxPollSeconds = 6; // TODO: 120?
 
         const endPoll = (testId) => {
             clearInterval(activeIntervals[testId]);
             pollingEndsAt[testId] = null;
+            setProgressValue(testId, 100);
         };
         const poll = (testId, endPollingAt) => {
             pollingEndsAt[testId] = endPollingAt;
@@ -177,7 +195,6 @@
 
                 let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
                 if (secondsLeft < 0) secondsLeft = 0;
-                //$(`#progress-${testId}`).classList.remove("is-hidden");
                 setProgressValue(testId, 100 - Math.ceil(100 * secondsLeft / maxPollSeconds));
 
             }, pollingInterval);
@@ -197,19 +214,15 @@
             sessionStorage.setItem("testContexts", JSON.stringify(testContexts));
         }
 
-
-        // Rendering
-
-        const renderTest = (test) => {
-            TestsRenderer.maybeFullRender(test, test.Id);
-
-            // TODO: update state
-        }
-
         // Events
         const testChanged = (test) => {
-            console.log("TestChanged", test);
-            renderTest(test);
+            console.log("TestChanged", test.State, test);
+            if (!TestsRenderer.maybeFullRender(test)) {
+                TestsRenderer.renderState(test);
+            }
+            if (test.State === "@StateEnum.Ok") {
+                endPoll(test.Id);
+            }
         };
         connection.on("TestChanged", testChanged);
 
