@@ -24,6 +24,11 @@ const Site = (() => {
             var xhr = new XMLHttpRequest();
             xhr.open("POST", `/api/Events/${testEvent.EntityName}/${testEvent.EventName}/1`);
             xhr.send(null);
+        },
+
+        prettyPrintDateTime: (dateTime) => {
+            if (typeof dateTime === "string") dateTime = new Date(dateTime);
+            return dateTime.toLocaleDateString("sv") + ", " + dateTime.toLocaleTimeString("sv");
         }
     }
 })();
@@ -62,10 +67,10 @@ const Storage = (() => {
     const storeTests = (testContexts) => {
         sessionStorage.setItem(storageKey, JSON.stringify(testContexts));
     }
-    const addTest = (testId, endPollingAt) => {
+    const addTest = (testId, createdAt, endPollingAt) => {
         let testContexts = getTests();
         if (!testContexts) testContexts = [];
-        testContexts.push({ testId: testId, endPollingAt: endPollingAt });
+        testContexts.push({ testId: testId, createdAt: createdAt, endPollingAt: endPollingAt });
         storeTests(testContexts);
     }
     const removeTest = (testId) => {

@@ -21,13 +21,13 @@ namespace Dashboard.Controllers
         }
 
         [HttpPost("Start")]
-        [Produces("text/plain")]
-        public async Task<string> StartTest()
+        [Produces("application/json")]
+        public async Task<JsonElement> StartTest()
         {
             var test = await _testLogic.CreateTest();
             var testId = test.GetProperty("Id").GetString();
             await _hubContext.Clients.All.SendAsync("TestChanged", testId, test);
-            return testId;
+            return test;
         }
     }
 }

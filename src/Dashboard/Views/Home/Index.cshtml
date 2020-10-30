@@ -138,10 +138,12 @@
                     const elementId = `test-${rootTest.Id}`;
                     if (document.querySelector(`#${elementId}`)) return false;
 
+                    console.log(rootTest, rootTest.CreatedAt)
                     let html = '<nav class="panel">' +
-                        '<p class="panel-heading">' +
-                        `  Test result ${rootTest.CreatedAt}` +
-                        '</p>' +
+                        '<div class="panel-heading">' +
+                        `  <p class="is-size-4">Test result</p>` +
+                        `  <p class="is-size-6">${Site.prettyPrintDateTime(rootTest.CreatedAt)}</p>` +
+                        '</div>' +
                         '<div class="panel-block">' +
                         `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
                         '</div>' +
@@ -193,7 +195,7 @@
                     let html = "";
                     if (testContexts) {
                         testContexts.reverse().forEach((testContext) => {
-                            html += `<a class="dropdown-item" onclick="Tests.load('${testContext.testId}')">${testContext.endPollingAt}</a>`;
+                            html += `<a class="dropdown-item" onclick="Tests.load('${testContext.testId}')">${Site.prettyPrintDateTime(testContext.createdAt)}</a>`;
                         });
                     }
                     $("#history-dropdown-content").innerHTML = html;
@@ -296,10 +298,10 @@
                         "/api/Tests/Start",
                         {
                             ok: (xhr) => {
-                                const testId = xhr.response;
+                                const test = JSON.parse(xhr.response);
                                 const endPollingAt = new Date((new Date).getTime() + maxPollSeconds * 1000);
-                                poll(testId, endPollingAt);
-                                Storage.addTest(testId, endPollingAt);
+                                poll(test.Id, endPollingAt);
+                                Storage.addTest(test.Id, test.CreatedAt, endPollingAt);
                                 const testContexts = Storage.getTests();
                                 TestsRenderer.createTestMenu(testContexts);
                             },
