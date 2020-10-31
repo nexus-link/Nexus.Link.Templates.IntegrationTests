@@ -1,7 +1,6 @@
 using System;
 using System.Net.Http.Headers;
 using System.Text;
-using Dashboard.Controllers;
 using Dashboard.Hubs;
 using Dashboard.Logic;
 using Microsoft.AspNetCore.Builder;

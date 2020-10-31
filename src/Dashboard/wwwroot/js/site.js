@@ -7,6 +7,9 @@
 
 
 const Site = (() => {
+    const htmlEscapes = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;", "/": "&#x2F;" };
+    const htmlEscaper = /[&<>"'\/]/g;
+
     return {
         resetEvents: () => {
             var xhr = new XMLHttpRequest();
@@ -29,6 +32,10 @@ const Site = (() => {
         prettyPrintDateTime: (dateTime) => {
             if (typeof dateTime === "string") dateTime = new Date(dateTime);
             return dateTime.toLocaleDateString("sv") + ", " + dateTime.toLocaleTimeString("sv");
+        },
+
+        escapeHtml: (text) => {
+            return `${text}`.replace(htmlEscaper, function (match) { return htmlEscapes[match]; });
         }
     }
 })();

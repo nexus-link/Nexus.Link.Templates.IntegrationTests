@@ -1,6 +1,9 @@
 ﻿@using SharedKernel
 @{
-    ViewData["Title"] = "Events";
+    ViewData["Title"] = "Test runner";
+
+    // TODO: Mini version of live stats on index
+    // TODO: Show Message
 }
 
 <nav class="level mt-2">
@@ -65,14 +68,17 @@
                 navigating = false;
             }
 
-            const createAPanel = (elementId, name, state, testProperties, disableLink) => {
+            const createAPanel = (elementId, name, state, message, testProperties, disableLink) => {
+                if (!message) message = "";
                 const iconClass = state === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (state === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
                 const itemClass = disableLink ? "fa-vial" : "fa-folder";
                 let html = `<a class="panel-block is-flex" id="${elementId}" ${disableLink ? "style='cursor:auto'" : ""}>` +
                     `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
-                    `  <span class="is-flex is-flex-grow-2">${name}</span>`;
+                    `  <span class="is-flex is-flex-grow-1 is-flex-shrink-0">${Site.escapeHtml(name)}</span>` +
+                    `  <span class="is-flex is-flex-grow-0 is-flex-shrink-0" style="width:1rem"></span>` +
+                    `  <span class="is-flex is-flex-grow-2 is-justify-content-flex-end is-size-7">${Site.escapeHtml(message)}</span>`;
                 if (testProperties) {
-                    html += `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem" onclick="Modals.open('${elementId}-properties')"><i class="fas fa-ellipsis-h"></i></span>`;
+                    html += `  <span class="is-flex is-flex-grow-0 is-justify-content-center is-clickable" style="width:3rem" onclick="Modals.open('${elementId}-properties')" title="Properties"><i class="fas fa-ellipsis-h"></i></span>`;
                     html += `<div class="modal" id="${elementId}-properties">
                       <div class="modal-background"></div>
                       <div class="modal-card">
@@ -81,13 +87,15 @@
                           <button class="delete" aria-label="close" onclick="Modals.closeAll()"></button>
                         </header>
                         <section class="modal-card-body">
-                            <code style="white-space:pre-wrap">${JSON.stringify(testProperties, null, 2)}</code>
+                            <code style="white-space:pre-wrap">${Site.escapeHtml(JSON.stringify(testProperties, null, 2))}</code>
                         </section>
                         <footer class="modal-card-foot"></footer>
                       </div>
                     </div>`;
+                } else {
+                    html += `  <span class="is-flex is-flex-grow-0" style="width:3rem"></span>`;
                 }
-                html += `  <span class="text-right is-flex is-flex-grow-0 is-justify-content-center" style="width:2rem"><i class="fas ${iconClass}"></i></span>` +
+                html += `  <span class="is-flex is-flex-grow-0 is-justify-content-center" style="width:3rem"><i class="fas ${iconClass}"></i></span>` +
                     `</a>`;
                 return html;
             }
@@ -98,7 +106,7 @@
                 let html = "";
                 tests.forEach((test) => {
                     const aElementId = `nav-${test.Id}`;
-                    html += createAPanel(aElementId, test.Name, test.State, test.Properties, test.Children == null);
+                    html += createAPanel(aElementId, test.Name, test.State, test.StateMessage, test.Properties, test.Children == null);
                     if (test.Children) {
                         eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTestId, test); } });
                     }
@@ -118,7 +126,7 @@
                 breadCrumbs.forEach((crumb) => {
                     const aElementId = `crumb-${crumb.Id}`;
                     eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, crumb); } });
-                    html += `<li><a id="${aElementId}">${crumb.Name}</a></li>`;
+                    html += `<li><a id="${aElementId}">${Site.escapeHtml(crumb.Name)}</a></li>`;
                 });
                 html += '  </ul>' +
                     '  </nav>' +
@@ -126,7 +134,7 @@
                 if (rootTest.Id !== test.Id) {
                     const parent = Tests.getParent(rootTest, test.Id);
                     const aElementId = `nav-${parent.Id}`;
-                    html += createAPanel(aElementId, "..", parent.State, parent.Properties);
+                    html += createAPanel(aElementId, "..", parent.State, parent.StateMessage, parent.Properties);
                     eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
                 }
                 html += createNavElements(rootTest.Id, test.Children, eventListeners);
