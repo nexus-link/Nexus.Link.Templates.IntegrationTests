@@ -29,7 +29,12 @@ namespace Dashboard.Controllers
             if (!Stats.TryGetValue(key, out _)) Stats.TryAdd(key, new Stat());
             Stats[key].Count++;
 
-            await SendSignal();
+            string correlationId = null;
+            if (Request.Headers.TryGetValue("X-Correlation-ID", out var correlationIds))
+            {
+                correlationId = correlationIds.FirstOrDefault();
+            }
+            await SendSignal(correlationId);
         }
 
         [HttpPost("Reset")]
@@ -40,11 +45,11 @@ namespace Dashboard.Controllers
             await SendSignal();
         }
 
-        private async Task SendSignal()
+        private async Task SendSignal(string correlationId = null)
         {
             var ordered = GetOrderedStats();
             var counts = ordered.Values.Select(x => x.Count);
-            await _hubContext.Clients.All.SendAsync("NewEventsStats", ordered.Keys, counts);
+            await _hubContext.Clients.All.SendAsync("NewEventsStats", ordered.Keys, counts, correlationId);
         }
 
         public static Dictionary<string, Stat> GetOrderedStats()

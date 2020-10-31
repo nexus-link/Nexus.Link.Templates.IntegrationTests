@@ -2,8 +2,8 @@
 @{
     ViewData["Title"] = "Test runner";
 
+    // TODO: Alltid ha ... och visa alla saker (Id, namn, tider, props, etc)
     // TODO: Mini version of live stats on index
-    // TODO: Show Message
 }
 
 <nav class="level mt-2">
@@ -38,8 +38,6 @@
 
 @section Scripts
 {
-    <script src="~/js/signalr/dist/browser/signalr.min.js"></script>
-
     <script>
         const TestsRenderer = (() => {
             const rootTests = [];
@@ -182,8 +180,17 @@
                     console.log(rootTest, rootTest.CreatedAt)
                     let html = '<nav class="panel">' +
                         '<div class="panel-heading">' +
-                        `  <p class="is-size-4">Test result</p>` +
-                        `  <p class="is-size-6">${Site.prettyPrintDateTime(rootTest.CreatedAt)}</p>` +
+                        '  <div class="columns">' +
+                        '    <div class="column is-half">' +
+                        `      <p class="is-size-4">Test result</p>` +
+                        `      <p class="is-size-6">${Site.prettyPrintDateTime(rootTest.CreatedAt)}</p>` +
+                        '    </div>' +
+                        '    <div class="column has-text-right">';
+                    //if (Tests.isTestActive(rootTest.Id)) {
+                    //    html += `      Received events: <span id="received-events-${rootTest.Id}">0</span>`;
+                    //}
+                    html += '    </div>' +
+                        '  </div>' +
                         '</div>' +
                         '<div class="panel-block">' +
                         `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
@@ -254,8 +261,10 @@
 
         const Tests = (() => {
             // SignalR
-            const connection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
-            connection.start().then(() => {}).catch((err) => { return console.error("Connection error", err.toString()); });
+            const testsConnection = new window.signalR.HubConnectionBuilder().withUrl("/testsHub").build();
+            testsConnection.start().then(() => {}).catch((err) => { return console.error("Connection error", err.toString()); });
+            //const eventsConnection = new window.signalR.HubConnectionBuilder().withUrl("/eventsHub").build();
+            //eventsConnection.start().then(() => {}).catch((err) => { return console.error("Connection error", err.toString()); });
 
             // Helper: Progress
             const setProgressValue = (testId, value) => {
@@ -281,7 +290,7 @@
                             endPoll(testId);
                         }
                         console.log("pinging");
-                        connection.invoke("UpdateStatus", testId);
+                        testsConnection.invoke("UpdateStatus", testId);
 
                         let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
                         if (secondsLeft < 0) secondsLeft = 0;
@@ -292,7 +301,7 @@
             };
 
             // Events
-            connection.on("TestChanged", (testId, test) => {
+            testsConnection.on("TestChanged", (testId, test) => {
                 if (!test) {
                     console.log(`Test no longer available: ${testId}`);
                     endPoll(testId);
@@ -305,6 +314,11 @@
                 if (!TestsRenderer.maybeFullRender(test)) TestsRenderer.renderState(test);
                 if (test.State === "@StateEnum.Ok") endPoll(test.Id);
             });
+
+            //eventsConnection.on("NewEventsStats", function (labels, data, correlationId) {
+            //    console.log("NewEventsStats", labels, data, "correlationId", correlationId);
+            //    TestsRenderer.setReceivedEvents(correlationId, data.length);
+            //});
 
             // Test navigation
             const buildTestPath = (test, activeTestId, path) => {
@@ -386,7 +400,7 @@
                 },
 
                 load: (testId) => {
-                    connection.invoke("UpdateStatus", testId);
+                    testsConnection.invoke("UpdateStatus", testId);
                 },
 
                 poll: (testId, seconds) => {
@@ -405,7 +419,11 @@
                 },
 
                 buildTestPath: buildTestPath,
-                getParent: getParent
+                getParent: getParent,
+
+                isTestActive: (rootTestId) => {
+                    return pollingEndsAt[rootTestId] != null;
+                }
             }
         })();
 
