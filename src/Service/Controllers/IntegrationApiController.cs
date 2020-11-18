@@ -47,6 +47,7 @@ namespace Service.Controllers
         }
 
 
+        [AllowAnonymous]
         [HttpPost("Authentication/Tokens")]
         public async Task<AuthenticationToken> CreateTokenAsync(AuthenticationCredentials tokenCredentials)
         {

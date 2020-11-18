@@ -66,34 +66,45 @@
                 navigating = false;
             }
 
-            const createAPanel = (elementId, name, state, message, testProperties, disableLink) => {
-                if (!message) message = "";
-                const iconClass = state === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (state === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
+            const createAPanel = (elementIdPrefix, name, test, disableLink) => {
+                const iconClass = test.State === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (test.State === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
                 const itemClass = disableLink ? "fa-vial" : "fa-folder";
-                let html = `<a class="panel-block is-flex" id="${elementId}" ${disableLink ? "style='cursor:auto'" : ""}>` +
-                    `  <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
-                    `  <span class="is-flex is-flex-grow-1 is-flex-shrink-0">${Site.escapeHtml(name)}</span>` +
-                    `  <span class="is-flex is-flex-grow-0 is-flex-shrink-0" style="width:1rem"></span>` +
-                    `  <span class="is-flex is-flex-grow-2 is-justify-content-flex-end is-size-7">${Site.escapeHtml(message)}</span>`;
-                if (testProperties) {
-                    html += `  <span class="is-flex is-flex-grow-0 is-justify-content-center is-clickable" style="width:3rem" onclick="Modals.open('${elementId}-properties')" title="Properties"><i class="fas fa-ellipsis-h"></i></span>`;
-                    html += `<div class="modal" id="${elementId}-properties">
-                      <div class="modal-background"></div>
-                      <div class="modal-card">
-                        <header class="modal-card-head">
-                          <p class="modal-card-title">Test properties</p>
-                          <button class="delete" aria-label="close" onclick="Modals.closeAll()"></button>
-                        </header>
-                        <section class="modal-card-body">
-                            <code style="white-space:pre-wrap">${Site.escapeHtml(JSON.stringify(testProperties, null, 2))}</code>
-                        </section>
-                        <footer class="modal-card-foot"></footer>
-                      </div>
-                    </div>`;
-                } else {
-                    html += `  <span class="is-flex is-flex-grow-0" style="width:3rem"></span>`;
+                let html = `<a class="panel-block is-flex" id="${elementIdPrefix}-a" ${disableLink ? "style='cursor:auto'" : ""}>` +
+                    `  <span class="is-flex is-flex-grow-2" id="${elementIdPrefix}-link">` +
+                    `    <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
+                    `    <span class="is-flex is-flex-grow-1 is-flex-shrink-0">${Site.escapeHtml(name)}</span>` +
+                    `    <span class="is-flex is-flex-grow-0 is-flex-shrink-0" style="width:1rem"></span>` +
+                    `    <span class="is-flex is-flex-grow-2 is-justify-content-flex-end is-size-7">${Site.escapeHtml(test.StateMessage || "")}</span>` +
+                    `  </span>` +
+                    `  <span class="is-flex is-flex-grow-0 is-justify-content-center is-clickable" style="width:3rem" onclick="Modals.open('${elementIdPrefix}-properties')" title="Properties"><i class="fas fa-ellipsis-h"></i></span>` +
+                    `  <div class="modal" id="${elementIdPrefix}-properties">
+                        <div class="modal-background"></div>
+                        <div class="modal-card">
+                          <header class="modal-card-head">
+                            <p class="modal-card-title">Test information</p>
+                            <button class="delete" aria-label="close" onclick="Modals.closeAll()"></button>
+                          </header>
+                          <section class="modal-card-body">
+                              <p>Id: ${test.Id}</p>
+                              <p>Name: ${Site.escapeHtml(test.Name)}</p>
+                              <p>State: ${test.State}</p>
+                              <p>CreatedAt: ${Site.prettyPrintDateTime(test.CreatedAt)}</p>
+                    `;
+                if (test.Description) {
+                    html += `<hr />
+                        <p>Description:</p>
+                        <p>${Site.escapeHtml(test.Description)}</p>`;
                 }
-                html += `  <span class="is-flex is-flex-grow-0 is-justify-content-center" style="width:3rem"><i class="fas ${iconClass}"></i></span>` +
+                if (test.Properties) {
+                    html += `<hr />
+                        <p>Properties:</p>
+                        <code style="white-space:pre-wrap">${Site.escapeHtml(JSON.stringify(test.Properties, null, 2))}</code>`;
+                }
+                html += `  </section>
+                           <footer class="modal-card-foot"></footer>
+                         </div>
+                       </div>` +
+                    `  <span class="is-flex is-flex-grow-0 is-justify-content-center" style="width:3rem"><i class="fas ${iconClass}"></i></span>` +
                     `</a>`;
                 return html;
             }
@@ -103,10 +114,10 @@
 
                 let html = "";
                 tests.forEach((test) => {
-                    const aElementId = `nav-${test.Id}`;
-                    html += createAPanel(aElementId, test.Name, test.State, test.StateMessage, test.Properties, test.Children == null);
+                    const elementIdPrefix = `nav-${test.Id}`;
+                    html += createAPanel(elementIdPrefix, test.Name, test, test.Children == null);
                     if (test.Children) {
-                        eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTestId, test); } });
+                        eventListeners.push({ elementId: `${elementIdPrefix}-link`, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTestId, test); } });
                     }
                 });
                 return html;
@@ -131,9 +142,9 @@
                     '</div>';
                 if (rootTest.Id !== test.Id) {
                     const parent = Tests.getParent(rootTest, test.Id);
-                    const aElementId = `nav-${parent.Id}`;
-                    html += createAPanel(aElementId, "..", parent.State, parent.StateMessage, parent.Properties);
-                    eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
+                    const elementIdPrefix = `nav-${parent.Id}`;
+                    html += createAPanel(elementIdPrefix, "..", parent, false);
+                    eventListeners.push({ elementId: `${elementIdPrefix}-link`, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
                 }
                 html += createNavElements(rootTest.Id, test.Children, eventListeners);
                 return { html: html, eventListeners: eventListeners };
