@@ -115,8 +115,8 @@ namespace Service.Logic
                 var child = await ToTestRecursive(storageChild);
                 test.Children.Add(child);
             }
+            test.Children.Sort((a, b) => string.CompareOrdinal(a.Name, b.Name));
         }
-
     }
 
     /// <summary></summary>
