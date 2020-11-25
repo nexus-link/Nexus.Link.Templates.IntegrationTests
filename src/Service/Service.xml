@@ -74,9 +74,6 @@
         <member name="F:Service.Configuration.TestGrouping.BusinessProcessesTests">
             <summary></summary>
         </member>
-        <member name="F:Service.Configuration.TestGrouping.ServiceBasics">
-            <summary></summary>
-        </member>
         <member name="T:Service.Controllers.AllTestsController">
             <summary>
             Convenience for running all tests in different categories.
@@ -103,12 +100,6 @@
             </summary>
             <param name="parent">The parent test. You would almost certainly set this to null.</param>
         </member>
-        <member name="M:Service.Controllers.AllTestsController.BusinessProcessesTests(SharedKernel.Test)">
-            <summary>
-            Run all Business Processes tests
-            </summary>
-            <param name="parent">The parent test. You would almost certainly set this to null.</param>
-        </member>
         <member name="T:Service.Controllers.IntegrationApiController">
              <summary>
              Fulfills the exact same contract as the integration part of the business api (Event sending, Authentication, etc.)
@@ -120,7 +111,7 @@
         <member name="M:Service.Controllers.IntegrationApiController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
             <summary></summary>
         </member>
-        <member name="M:Service.Controllers.IntegrationApiController.Publish(System.String,System.String,System.Int32,System.Int32,System.String,Newtonsoft.Json.Linq.JObject)">
+        <member name="M:Service.Controllers.IntegrationApiController.Publish(System.String,System.String,System.Int32,System.Int32,Newtonsoft.Json.Linq.JObject)">
             <summary>
             Captures the event and sends it to Nexus Business Events test bench for verification
             </summary>
@@ -145,15 +136,6 @@
         </member>
         <member name="M:Service.Controllers.TestControllerBase.RunTestablesOnlyRunAllAsync(SharedKernel.Test,System.Collections.Generic.List{Microsoft.AspNetCore.Mvc.ControllerBase})">
             <summary></summary>
-        </member>
-        <member name="M:Service.Controllers.TestControllerBase.RunTestablesOnlyRunAllAsync(SharedKernel.Test,System.Collections.Generic.List{Microsoft.AspNetCore.Mvc.ControllerBase},System.Boolean)">
-            <summary>
-            
-            </summary>
-            <param name="container"></param>
-            <param name="testables"></param>
-            <param name="runAll"></param>
-            <returns></returns>
         </member>
         <member name="T:Service.Controllers.TestsController">
             <summary>
@@ -232,6 +214,11 @@
             A class (Controller) that has some tests
             </summary>
         </member>
+        <member name="P:Service.Models.ITestable.Group">
+            <summary>
+            What test grouping it belongs to. See <see cref="T:Service.Configuration.TestGrouping"/>.
+            </summary>
+        </member>
         <member name="M:Service.Models.ITestable.RunAllAsync(SharedKernel.Test)">
             <summary>
             Run all tests and return a container test that wraps them.
@@ -260,6 +247,9 @@
         <member name="P:Service.Startup.HostEnvironment">
             <summary></summary>
         </member>
+        <member name="P:Service.Startup.ServiceProvider">
+            <summary></summary>
+        </member>
         <member name="F:Service.Startup.ApiName">
             <summary></summary>
         </member>
@@ -269,40 +259,23 @@
         <member name="M:Service.Startup.Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder)">
             <summary></summary>
         </member>
-        <member name="T:Service.Tests.AbstractServiceMetasTestBaseController">
-            <summary></summary>
+        <member name="T:Service.Tests.ContractTests.Capability1.Capability1CallbackController">
+             <summary>
+             Represents a test strategy where the Platform Integration Test Service is a subscriber of events.
+            
+             (The other strategy is for the adapters to use the Platform Integration Test Service
+             as their "Integration Api" which they use to send events, which are then intercepted)
+             </summary>
         </member>
-        <member name="M:Service.Tests.AbstractServiceMetasTestBaseController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic,System.String)">
-            <summary></summary>
-        </member>
-        <member name="M:Service.Tests.AbstractServiceMetasTestBaseController.ServiceInformation(SharedKernel.Test)">
+        <member name="M:Service.Tests.ContractTests.Capability1.Capability1TestsController.OrderCreatedEvent(SharedKernel.Test)">
             <summary>
-            Fetches service information
-            </summary>
-            <param name="parent"></param>
-            <returns></returns>
-        </member>
-        <member name="M:Service.Tests.AbstractServiceMetasTestBaseController.Health(SharedKernel.Test)">
-            <summary>
-            Fetches service health
-            </summary>
-            <param name="parent"></param>
-            <returns></returns>
-        </member>
-        <member name="T:Service.Tests.ContractTests.Adapters.AkeneoAdapter.ServiceMetasTestBusinessApiController">
-            <summary>
-            Basic tests (like ServiceInfo and Health)
+            EXAMPLE: Trigger event by creating entity
             </summary>
         </member>
-        <member name="M:Service.Tests.ContractTests.Adapters.AkeneoAdapter.ServiceMetasTestBusinessApiController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
-            <summary></summary>
-        </member>
-        <member name="M:Service.Tests.ContractTests.Adapters.AkeneoAdapter.ServiceMetasTestBusinessApiController.RunAllAsync(SharedKernel.Test)">
+        <member name="M:Service.Tests.ContractTests.Capability1.Capability1TestsController.CreatePerson(SharedKernel.Test)">
             <summary>
-            All tests in <see cref="T:Service.Tests.ContractTests.Adapters.AkeneoAdapter.ServiceMetasTestBusinessApiController"/>
+            EXAMPLE: CRUD person entity
             </summary>
-            <param name="parent"></param>
-            <returns></returns>
         </member>
         <member name="T:Service.Tests.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController">
             <summary>
@@ -317,21 +290,15 @@
             Create a JWT through the Business API for known API user
             </summary>
         </member>
-        <member name="T:Service.Tests.PlatformConfigurationTests.Services.ServiceMetasTestBusinessApiController">
+        <member name="T:Service.Tests.PlatformConfigurationTests.Translations.BusinessApiTranslationsTestController">
             <summary>
-            Basic tests (like ServiceInfo and Health)
+            Calls the business api and verifies that values are translated between clients
             </summary>
         </member>
-        <member name="M:Service.Tests.PlatformConfigurationTests.Services.ServiceMetasTestBusinessApiController.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Service.Logic.ITestLogic)">
-            <summary></summary>
-        </member>
-        <member name="M:Service.Tests.PlatformConfigurationTests.Services.ServiceMetasTestBusinessApiController.RunAllAsync(SharedKernel.Test)">
+        <member name="M:Service.Tests.PlatformConfigurationTests.Translations.BusinessApiTranslationsTestController.EnumTranslation(SharedKernel.Test)">
             <summary>
-            All tests in <see cref="T:Service.Tests.PlatformConfigurationTests.Services.ServiceMetasTestBusinessApiController"/>
+            Create an order as one client and get it as another
             </summary>
-            <param name="parent"></param>
-            <returns></returns>
         </member>
-        <!-- Badly formed XML comment ignored for member "T:Service.Tests.PlatformConfigurationTests.Translations.BusinessApiTranslationsTestController" -->
     </members>
 </doc>

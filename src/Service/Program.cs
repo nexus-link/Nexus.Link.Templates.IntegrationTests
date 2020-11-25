@@ -14,7 +14,9 @@ namespace Service
         /// <summary></summary>
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var build = CreateHostBuilder(args).Build();
+            Startup.ServiceProvider = build.Services;
+            build.Run();
         }
 
         /// <summary></summary>

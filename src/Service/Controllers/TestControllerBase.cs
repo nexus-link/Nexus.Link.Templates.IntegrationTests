@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Service.Logic;
 using Service.Models;
@@ -33,12 +34,7 @@ namespace Service.Controllers
             var testables = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypes())
                 .Where(x => typeof(ITestable).IsAssignableFrom(x) && !x.IsInterface && !x.IsAbstract)
-                .Select(x =>
-                {
-                    // TODO: Would be nice with dependency injection
-                    var instance = (ITestable)Activator.CreateInstance(x, Configuration, TestLogic); // TODO: Not so nice
-                    return instance;
-                })
+                .Select(x => (ITestable)ActivatorUtilities.GetServiceOrCreateInstance(Startup.ServiceProvider, x))
                 .Where(x => x.Group == group)
                 .Select(x => (ControllerBase)x)
                 .ToList();

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using DataAccess.Memory;
 using DataAccess.Sql;
@@ -33,6 +34,8 @@ namespace Service
         public IConfiguration Configuration { get; }
         /// <summary></summary>
         public IWebHostEnvironment HostEnvironment { get; }
+        /// <summary></summary>
+        public static IServiceProvider ServiceProvider { get; set; }
 
         /// <summary></summary>
         public static string ApiName;
