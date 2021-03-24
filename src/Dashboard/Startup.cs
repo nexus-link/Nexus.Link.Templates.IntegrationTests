@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Dashboard.Hubs;
 using Dashboard.Logic;
+using Dashboard.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -34,6 +35,7 @@ namespace Dashboard
             });
 
             services.AddSingleton<ITestLogic, TestLogic>();
+            services.Configure<DashboardSettings>(Configuration.GetSection("DashboardSettings"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

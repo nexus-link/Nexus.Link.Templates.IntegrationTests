@@ -1,0 +1,197 @@
+﻿@inject Microsoft.Extensions.Options.IOptions<DashboardSettings> DashboardOptions
+@using SharedKernel
+@model object
+@{
+    var dashboardSettings = DashboardOptions.Value;
+}
+
+<script>
+Site.Tests = (() => {
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Helper: Progress bar value
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const setProgressValue = (testId, value) => {
+        const progressElement = $(`#progress-${testId}`);
+        if (progressElement) progressElement.setAttribute("value", value);
+    }
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // SignalR connection setup
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const testsConnection = new window.signalR.HubConnectionBuilder().withUrl('@Url.Content("~/testsHub")').build();
+    testsConnection.start().then(() => { }).catch((err) => { return console.error("Connection error", err.toString()); });
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Polling
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    let activeIntervals = [],
+        pollingEndsAt = [];
+    const pollingInterval = @dashboardSettings.PollingIntervalMs,
+        maxPollSeconds = @dashboardSettings.MaxPollSeconds;
+
+    const endPoll = (testId) => {
+        if (activeIntervals[testId]) clearInterval(activeIntervals[testId]);
+        if (pollingEndsAt[testId]) pollingEndsAt[testId] = null;
+        setProgressValue(testId, 100);
+    };
+    const poll = (testId, endPollingAt) => {
+        pollingEndsAt[testId] = endPollingAt;
+        activeIntervals[testId] = setInterval(function () {
+            if (!activeIntervals[testId] || !pollingEndsAt[testId] || new Date > pollingEndsAt[testId]) {
+                endPoll(testId);
+            }
+            console.log("pinging");
+            testsConnection.invoke("UpdateStatus", testId);
+
+            let secondsLeft = (endPollingAt.getTime() - (new Date).getTime()) / 1000;
+            if (secondsLeft < 0) secondsLeft = 0;
+            setProgressValue(testId, 100 - Math.ceil(100 * secondsLeft / maxPollSeconds));
+
+        },
+        pollingInterval);
+    };
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // SignalR events
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    testsConnection.on("TestChanged", (testId, test) => {
+        if (!test) {
+            console.log(`Test no longer available: ${testId}`);
+            endPoll(testId);
+            Site.Storage.removeTest(testId);
+            return;
+        }
+        if (!Site.Storage.getTest(testId)) return;
+
+        console.log("TestChanged", test.State, test);
+        if (!Site.TestsRenderer.maybeFullRender(test)) Site.TestsRenderer.renderState(test);
+        if (test.State === "@StateEnum.Ok") endPoll(test.Id);
+        if (test.State === "@StateEnum.Failed") endPoll(test.Id);
+    });
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Test navigation
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const buildTestPath = (test, activeTestId, path) => {
+        path.push(test);
+        if (test.Id === activeTestId) return true;
+        if (!test.Children) return false;
+        let found = false;
+        test.Children.forEach((child) => {
+            const pathContainsActive = buildTestPath(child, activeTestId, path);
+            if (pathContainsActive) found = true;
+            else path.pop();
+        });
+        return found;
+    }
+
+    const getParent = (test, activeTestId, parent) => {
+        if (test.Id === activeTestId) return parent;
+        if (!test.Children) return null;
+        for (const child of test.Children) {
+            const x = getParent(child, activeTestId, test);
+            if (x) return x;
+        }
+        return null;
+    }
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Exposed methods
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    return {
+
+        // Check in local storage for active tests
+        maybeResume: () => {
+            const testContexts = Site.Storage.getTests();
+            console.log("Previous tests", testContexts);
+            if (!testContexts) return;
+
+            let spliceTo = null;
+            testContexts.forEach((testContext, index) => {
+                const endTime = new Date(testContext.endPollingAt);
+                // Check for ongoing test
+                if (new Date < endTime) {
+                    poll(testContext.testId, endTime);
+                }
+                // Prune old tests. Use same purge time as in PurgeJob
+                else if (endTime < new Date((new Date).getTime() - 7 * 24 * 60 * 60 * 1000)) {
+                    spliceTo = index + 1;
+                }
+            });
+            if (spliceTo) {
+                testContexts.splice(0, spliceTo);
+                Site.Storage.storeTests(testContexts);
+            }
+            Site.TestsRenderer.createTestMenu(testContexts);
+        },
+
+        // Starts a new test
+        start: () => {
+            $("#start-button").setAttribute("disabled", "disabled");
+            $("#start-button span").classList.add("is-hidden");
+            $("#start-button svg").classList.remove("is-hidden");
+
+            // Start the test. A callback on "TestChanged" will happen.
+            Site.Api.call("POST",
+                '@Url.RouteUrl("StartTest")',
+                {
+                    ok: (xhr) => {
+                        const test = JSON.parse(xhr.response);
+                        const endPollingAt = new Date((new Date).getTime() + maxPollSeconds * 1000);
+                        poll(test.Id, endPollingAt);
+                        Site.Storage.addTest(test.Id, test.CreatedAt, endPollingAt);
+                        const testContexts = Site.Storage.getTests();
+                        Site.TestsRenderer.createTestMenu(testContexts);
+                    },
+                    error: (xhr) => {
+                        console.log("error", xhr.status, xhr.responseText);
+                        alert("Unable to start a test. See console for details.")
+                    },
+                    always: (xhr) => {
+                        $("#start-button svg").classList.add("is-hidden");
+                        $("#start-button span").classList.remove("is-hidden");
+                        $("#start-button").removeAttribute("disabled");
+                    }
+                });
+        },
+
+        // Load an existing test
+        load: (testId) => {
+            testsConnection.invoke("UpdateStatus", testId);
+        },
+
+        // Poll a few seconds more for a test
+        poll: (testId, seconds) => {
+            const endPollingAt = new Date((new Date).getTime() + seconds * 1000);
+            poll(testId, endPollingAt);
+        },
+
+        // Delete a test
+        deleteTest: (testId) => {
+            if (confirm("Are you sure?")) {
+                endPoll(testId);
+                Site.TestsRenderer.deleteTestElement(testId);
+                Site.Storage.removeTest(testId);
+                const testContexts = Site.Storage.getTests();
+                Site.TestsRenderer.createTestMenu(testContexts);
+            }
+        },
+
+        // Path from top to a specific test
+        buildTestPath: buildTestPath,
+
+        // Gets the parent of a test
+        getParent: getParent,
+
+        // Tells if a test's polling is active
+        isTestActive: (rootTestId) => {
+            return pollingEndsAt[rootTestId] != null;
+        }
+    }
+})();
+</script>

@@ -13,7 +13,7 @@ const Site = (() => {
     return {
         resetEvents: () => {
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/api/Events/Reset");
+            xhr.open("POST", `${window.VIRTUAL_PATH}/api/Events/Reset`);
             xhr.send(null);
         },
 
@@ -25,7 +25,7 @@ const Site = (() => {
             ];
             const testEvent = testEvents[Math.floor(Math.random() * testEvents.length)];
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", `/api/Events/${testEvent.EntityName}/${testEvent.EventName}/1`);
+            xhr.open("POST", `${window.VIRTUAL_PATH}/api/Events/${testEvent.EntityName}/${testEvent.EventName}/1`);
             xhr.send(null);
         },
 
@@ -41,7 +41,7 @@ const Site = (() => {
 })();
 
 
-const Api = (() => {
+Site.Api = (() => {
 
     return {
         call: (method, url, callbacks) => {
@@ -62,7 +62,7 @@ const Api = (() => {
 })();
 
 
-const Storage = (() => {
+Site.Storage = (() => {
 
     const storageKey = "testContexts";
 
@@ -111,7 +111,7 @@ const Storage = (() => {
     }
 })();
 
-const Modals = (() => {
+Site.Modals = (() => {
     var rootEl = document.documentElement;
 
     const closeModals = () => {

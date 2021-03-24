@@ -1,0 +1,277 @@
+﻿@using SharedKernel
+@model object
+
+<script>
+Site.TestsRenderer = (() => {
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Keeps track of active tests, with the root test id as key
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const rootTests = [];
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Helper: setup up a list of event listeners
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const setupEventListeners = (eventListeners) => {
+        eventListeners.forEach((ev) => {
+            $(`#${ev.elementId}`).addEventListener(ev.event, ev.func);
+        });
+    }
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Navigation
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    let navigating = false;
+    const navigateTo = (rootTestId, activeTest) => {
+        if (navigating) return;
+        navigating = true;
+
+        const rootTest = rootTests[rootTestId].root;
+        if (!activeTest) activeTest = rootTest;
+        rootTests[rootTestId].active = activeTest;
+
+        $(`#search-${rootTest.Id}`).value = "";
+
+        // ReSharper disable once VariableUsedInInnerScopeBeforeDeclared
+        const navSetup = createNav(rootTest, rootTests[rootTestId].active);
+        $(`#nav-render-${rootTest.Id}`).innerHTML = navSetup.html;
+        setupEventListeners(navSetup.eventListeners);
+
+        navigating = false;
+    }
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Creates a "A tag as (bulma) panel"; a row that holds information about a test node
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const createAPanel = (elementIdPrefix, name, test, disableLink) => {
+        const iconClass = test.State === "@StateEnum.Ok" ? "fa-check has-text-success-dark" : (test.State === "@StateEnum.Failed" ? "fa-times has-text-danger-dark" : "fa-spinner fa-spin has-text-info");
+        const itemClass = disableLink ? "fa-vial" : "fa-folder";
+        let html = `<a class="panel-block is-flex" id="${elementIdPrefix}-a" ${disableLink ? "style='cursor:auto'" : ""}>` +
+            `  <span class="is-flex is-flex-grow-2" id="${elementIdPrefix}-link">` +
+            `    <span class="panel-icon is-flex is-flex-grow-0"><i class="fas ${itemClass}" aria-hidden="true"></i></span>` +
+            `    <span class="is-flex is-flex-grow-1 is-flex-shrink-0">${Site.escapeHtml(name)}</span>` +
+            `    <span class="is-flex is-flex-grow-0 is-flex-shrink-0" style="width:1rem"></span>` +
+            `    <span class="is-flex is-flex-grow-2 is-justify-content-flex-end is-size-7">${Site.escapeHtml(test.StateMessage || "")}</span>` +
+            `  </span>` +
+            `  <span class="is-flex is-flex-grow-0 is-justify-content-center is-clickable" style="width:3rem" onclick="Site.Modals.open('${elementIdPrefix}-properties')" title="Properties"><i class="fas fa-ellipsis-h"></i></span>` +
+            `  <div class="modal" id="${elementIdPrefix}-properties">
+                        <div class="modal-background"></div>
+                        <div class="modal-card">
+                          <header class="modal-card-head">
+                            <p class="modal-card-title">Test information</p>
+                            <button class="delete" aria-label="close" onclick="Site.Modals.closeAll()"></button>
+                          </header>
+                          <section class="modal-card-body">
+                              <p>Id: ${test.Id}</p>
+                              <p>Name: ${Site.escapeHtml(test.Name)}</p>
+                              <p>State: ${test.State}</p>
+                              <p>CreatedAt: ${Site.prettyPrintDateTime(test.CreatedAt)}</p>
+                    `;
+        if (test.Description) {
+            html += `<hr />
+                        <p>Description:</p>
+                        <p>${Site.escapeHtml(test.Description)}</p>`;
+        }
+        if (test.Properties) {
+            html += `<hr />
+                        <p>Properties:</p>
+                        <code style="white-space:pre-wrap">${Site.escapeHtml(JSON.stringify(test.Properties, null, 2))}</code>`;
+        }
+        html += `  </section>
+                           <footer class="modal-card-foot"></footer>
+                         </div>
+                       </div>` +
+            `  <span class="is-flex is-flex-grow-0 is-justify-content-center" style="width:3rem"><i class="fas ${iconClass}"></i></span>` +
+            `</a>`;
+        return html;
+    }
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Takes a list of test (typically children of a test) and creates rows for each of them.
+    // Also prepares event listeners for each.
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const createNavElements = (rootTestId, tests, eventListeners) => {
+        if (!tests) return "";
+
+        let html = "";
+        tests.forEach((test) => {
+            const elementIdPrefix = `nav-${test.Id}`;
+            html += createAPanel(elementIdPrefix, test.Name, test, test.Children == null);
+            if (test.Children) {
+                eventListeners.push({ elementId: `${elementIdPrefix}-link`, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTestId, test); } });
+            }
+        });
+        return html;
+    }
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Constructs the clickable test tree, based on "test" (it's children will be visible)
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const createNav = (rootTest, test) => {
+        const eventListeners = [];
+        let html = '<div class="panel-block">' +
+            '  <nav class="breadcrumb" aria-label="breadcrumbs">' +
+            '    <ul>';
+
+        // Bread crumbs
+        const breadCrumbs = [];
+        if (!Site.Tests.buildTestPath(rootTest, test.Id, breadCrumbs)) throw `Unable to find bread crumbs for test ${test.Id} in test ${rootTest.Id}`;
+        breadCrumbs.forEach((crumb) => {
+            const aElementId = `crumb-${crumb.Id}`;
+            eventListeners.push({ elementId: aElementId, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, crumb); } });
+            html += `<li><a id="${aElementId}">${Site.escapeHtml(crumb.Name)}</a></li>`;
+        });
+        html += '  </ul>' +
+            '  </nav>' +
+            '</div>';
+
+        // If it's not the root element, present a way back ("..")
+        if (rootTest.Id !== test.Id) {
+            const parent = Site.Tests.getParent(rootTest, test.Id);
+            const elementIdPrefix = `nav-${parent.Id}`;
+            html += createAPanel(elementIdPrefix, "..", parent, false);
+            eventListeners.push({ elementId: `${elementIdPrefix}-link`, event: "click", func: (event) => { event.preventDefault(); navigateTo(rootTest.Id, parent); } });
+        }
+
+        // Add children
+        html += createNavElements(rootTest.Id, test.Children, eventListeners);
+        return { html: html, eventListeners: eventListeners };
+    }
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Searching
+    // Filters tests by searching name and properties
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    const searchTests = (test, searchFor, matches) => {
+        const lowerSearch = searchFor.toLowerCase();
+        if (test.Name.toLowerCase().indexOf(lowerSearch) !== -1 || (test.Properties && JSON.stringify(test.Properties).toLowerCase().indexOf(lowerSearch) !== -1)) {
+            matches.push(test);
+        }
+        if (test.Children) {
+            test.Children.forEach((child) => {
+                searchTests(child, searchFor, matches);
+            });
+        }
+    }
+
+    const search = (rootTestId, searchFor) => {
+        const rootTest = rootTests[rootTestId].root;
+
+        if (!searchFor) {
+            navigateTo(rootTestId, rootTest);
+            return;
+        }
+
+        const matches = [];
+        searchTests(rootTest, searchFor, matches);
+
+        const eventListeners = [];
+        const html = createNavElements(rootTest.Id, matches, eventListeners);
+
+        $(`#nav-render-${rootTest.Id}`).innerHTML = html;
+        setupEventListeners(eventListeners);
+    }
+
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Exposed methods
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    return {
+
+        // Renders a test unless it already exists in the DOM
+        maybeFullRender: (rootTest) => {
+            const elementId = `test-${rootTest.Id}`;
+            if (document.querySelector(`#${elementId}`)) return false;
+
+            rootTests[rootTest.Id] = { root: rootTest, active: rootTest };
+
+            console.log(rootTest, rootTest.CreatedAt)
+            let html = '<nav class="panel">' +
+                '<div class="panel-heading">' +
+                '  <div class="columns">' +
+                '    <div class="column is-half">' +
+                `      <p class="is-size-4">Test result</p>` +
+                `      <p class="is-size-6">${Site.prettyPrintDateTime(rootTest.CreatedAt)}</p>` +
+                '    </div>' +
+                '    <div class="column has-text-right">';
+
+            html += '    </div>' +
+                '  </div>' +
+                '</div>' +
+                '<div class="panel-block">' +
+                `  <progress id="progress-${rootTest.Id}" class="progress" value="0" max="100"></progress>` +
+                '</div>' +
+                '<div class="panel-block">' +
+                '  <nav class="level" style="width:100%">' +
+                '    <div class="level-left">' +
+                '      <div class="level-item">' +
+                '        <div class="field has-addons">' +
+                '          <p class="control has-icons-left">' +
+                `            <input class="input" type="text" placeholder="Search" id="search-${rootTest.Id}" onkeyup="Site.TestsRenderer.search('${rootTest.Id}', this.value)">` +
+                '            <span class="icon is-left"><i class="fas fa-search" aria-hidden="true"></i></span>' +
+                '          </p>' +
+                '        </div>' +
+                '      </div>' +
+                '    </div>' +
+                '    <div class="level-right">' +
+                `      <p class="level-item"><button class="button" onclick="Site.TestsRenderer.deleteTestElement('${rootTest.Id}')">Hide</button></p>` +
+                `      <p class="level-item"><button class="button" onclick="Site.Tests.poll('${rootTest.Id}', 10)">Poll 10 s</button></p>` +
+                `      <p class="level-item"><button class="button" onclick="Site.Tests.deleteTest('${rootTest.Id}')">Delete</button></p>` +
+                '    </div>' +
+                '  </nav>' +
+                '</div>' +
+                `<div id="nav-render-${rootTest.Id}">`;
+
+            const navSetup = createNav(rootTest, rootTest);
+            html += navSetup.html;
+
+            html += "</div>";
+            html += '</nav>';
+
+            const testElement = document.createElement("div");
+            testElement.setAttribute("id", elementId);
+            testElement.classList.add("mt-2");
+            testElement.innerHTML = html;
+            $("#tests").append(testElement);
+
+            setupEventListeners(navSetup.eventListeners);
+
+            return true;
+        },
+
+        // Instead of full render, just update existing elements
+        renderState: (rootTest) => {
+            rootTests[rootTest.Id].root = rootTest;
+            navigateTo(rootTest.Id, rootTests[rootTest.Id].active);
+        },
+
+        // Renders the test menu (with old tests)
+        createTestMenu: (testContexts) => {
+            let html = "";
+            if (testContexts) {
+                testContexts.reverse().forEach((testContext) => {
+                    html += `<a class="dropdown-item" onclick="Site.Tests.load('${testContext.testId}')">${Site.prettyPrintDateTime(testContext.createdAt)}</a>`;
+                });
+            }
+            $("#history-dropdown-content").innerHTML = html;
+        },
+
+        // Deletes a test from the DOM
+        deleteTestElement: (rootTestId) => {
+            const test = $(`#test-${rootTestId}`);
+            if (test) test.remove();
+        },
+
+        // Searches in test tree
+        search: (rootTestId, searchFor) => {
+            search(rootTestId, searchFor);
+        }
+    }
+})();
+</script>

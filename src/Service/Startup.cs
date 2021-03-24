@@ -47,6 +47,7 @@ namespace Service
             ApiName = Configuration["ApiName"];
 
             services.AddAuthentication("Basic").AddScheme<TokenAuthenticationOptions, TokenAuthenticationHandler>("Basic", o => { });
+            services.AddAuthentication("Bearer").AddJwtBearer();
 
             services
                 .AddMvc(config =>
@@ -141,7 +142,7 @@ namespace Service
             app.UseNexusTokenValidationHandler(nexusSettings.PublicKey);
 
             app.UseHttpsRedirection();
-            app.UseAuthentication();
+            //app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseSwagger();

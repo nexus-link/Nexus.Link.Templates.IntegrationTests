@@ -20,7 +20,7 @@ namespace Dashboard.Controllers
             _testLogic = testLogic;
         }
 
-        [HttpPost("Start")]
+        [HttpPost("Start", Name = "StartTest")]
         [Produces("application/json")]
         public async Task<JsonElement> StartTest()
         {
