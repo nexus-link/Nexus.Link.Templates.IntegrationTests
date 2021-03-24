@@ -12,11 +12,8 @@ There are placeholders in the template code starting with "TASK: ", which you sh
 ### Running the template 
 This template is setup to run for tenant "platform-integration-test-template-service/dev" in Nexus PRDSIM.
 
-1. Run the Mocks project (with dotnet, not IISExpress)
-2. Run the Service project (with dotnet, not IISExpress)
-3. In swagger of Service, authorize (credentials found in appsettings.Development.json; Service:Username, Service:Password)
-4. Try out /api/v1/AllTests
-5. Get test results with /api/v1/Tests/{id}
+1. run all the projects with `run-all.bat`
+2. Use Dashboard UI to run the tests
 
 ### TODOs
 
