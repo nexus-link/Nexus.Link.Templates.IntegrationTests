@@ -150,32 +150,6 @@
             Get a test by id
             </summary>
         </member>
-        <member name="T:Service.Logic.TestLogic">
-            <summary>
-            Maps models from outside world to storage world
-            </summary>
-        </member>
-        <member name="M:Service.Logic.TestLogic.#ctor(SharedKernel.IStorage)">
-            <summary></summary>
-        </member>
-        <member name="M:Service.Logic.TestLogic.CreateRootAsync(System.String)">
-            <inheritdoc />
-        </member>
-        <member name="M:Service.Logic.TestLogic.CreateAsync(System.String,SharedKernel.Test)">
-            <inheritdoc />
-        </member>
-        <member name="M:Service.Logic.TestLogic.SetStateAsync(SharedKernel.Test,SharedKernel.StateEnum,System.String)">
-            <inheritdoc />
-        </member>
-        <member name="M:Service.Logic.TestLogic.UpdateAsync(SharedKernel.Test)">
-            <inheritdoc />
-        </member>
-        <member name="M:Service.Logic.TestLogic.GetAsync(System.String)">
-            <inheritdoc />
-        </member>
-        <member name="M:Service.Logic.TestLogic.PurgeAsync(System.TimeSpan)">
-            <inheritdoc />
-        </member>
         <member name="T:Service.Logic.ITestLogic">
             <summary></summary>
         </member>
@@ -208,6 +182,32 @@
             <summary>
             Remove all tests older than a time span
             </summary>
+        </member>
+        <member name="T:Service.Logic.TestLogic">
+            <summary>
+            Maps models from outside world to storage world
+            </summary>
+        </member>
+        <member name="M:Service.Logic.TestLogic.#ctor(SharedKernel.IStorage)">
+            <summary></summary>
+        </member>
+        <member name="M:Service.Logic.TestLogic.CreateRootAsync(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Logic.TestLogic.CreateAsync(System.String,SharedKernel.Test)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Logic.TestLogic.SetStateAsync(SharedKernel.Test,SharedKernel.StateEnum,System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Logic.TestLogic.UpdateAsync(SharedKernel.Test)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Logic.TestLogic.GetAsync(System.String)">
+            <inheritdoc />
+        </member>
+        <member name="M:Service.Logic.TestLogic.PurgeAsync(System.TimeSpan)">
+            <inheritdoc />
         </member>
         <member name="T:Service.Models.ITestable">
             <summary>
