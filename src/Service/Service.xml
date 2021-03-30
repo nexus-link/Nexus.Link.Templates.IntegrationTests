@@ -277,6 +277,15 @@
             EXAMPLE: CRUD person entity
             </summary>
         </member>
+        <member name="T:Service.Tests.ContractTests.Capability1.Models.MockPerson">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Tests.ContractTests.Capability1.Models.MockPerson.Id">
+            <summary></summary>
+        </member>
+        <member name="P:Service.Tests.ContractTests.Capability1.Models.MockPerson.Name">
+            <summary></summary>
+        </member>
         <member name="T:Service.Tests.PlatformConfigurationTests.Authentication.PlatformAuthenticationTestController">
             <summary>
             Tests Nexus Authentication as a service in the platform

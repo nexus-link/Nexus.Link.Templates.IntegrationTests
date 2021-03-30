@@ -3,20 +3,12 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Microsoft.Extensions.Hosting;
 using Nexus.Link.Libraries.Core.Error.Logic;
 
 namespace DataAccess.Sql
 {
     public class DatabasePatcherHandler
     {
-        private readonly string _contentRoot;
-
-        public DatabasePatcherHandler(string contentRoot)
-        {
-            _contentRoot = contentRoot;
-        }
-
         public void PatchIfNecessary(string environment, string connectionString, string masterConnectionString = null)
         {
             var traceLog = new StringBuilder("Patching database | ");
@@ -50,8 +42,8 @@ namespace DataAccess.Sql
 
         public DirectoryInfo GetBaseDir()
         {
-            const string relativeUrl = @"sql-scripts";
-            var dir = new DirectoryInfo($"{_contentRoot}\\" + relativeUrl);
+            const string relativeUrl = @"Sql";
+            var dir = new DirectoryInfo($"{AppDomain.CurrentDomain.BaseDirectory}\\" + relativeUrl);
             if (dir.Exists) return dir;
 
             // For Unit tests

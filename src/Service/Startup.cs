@@ -107,7 +107,7 @@ namespace Service
             {
                 var sqlStorage = new SqlStorage(sqlConnectionString);
                 services.AddSingleton<IStorage>(sqlStorage);
-                new DatabasePatcherHandler(HostEnvironment.ContentRootPath).PatchIfNecessary(Configuration["Nexus:Environment"], sqlConnectionString, Configuration["Service:MasterConnectionString"]);
+                new DatabasePatcherHandler().PatchIfNecessary(Configuration["Nexus:Environment"], sqlConnectionString, Configuration["Service:MasterConnectionString"]);
             }
             else if (!string.IsNullOrWhiteSpace(storageConnectionString))
             {

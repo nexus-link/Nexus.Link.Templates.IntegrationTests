@@ -8,7 +8,7 @@
 
 const Site = (() => {
     const htmlEscapes = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;", "/": "&#x2F;" };
-    const htmlEscaper = /[&<>"'\/]/g;
+    const htmlEscaper = /[&<>"'/]/g;
 
     return {
         resetEvents: () => {
@@ -87,7 +87,7 @@ Site.Storage = (() => {
         testContexts.forEach((test, index) => {
             if (test.testId === testId) spliceAt = index;
         });
-        if (spliceAt != null) {
+        if (spliceAt !== null) {
             testContexts.splice(spliceAt, 1);
             storeTests(testContexts);
         }
