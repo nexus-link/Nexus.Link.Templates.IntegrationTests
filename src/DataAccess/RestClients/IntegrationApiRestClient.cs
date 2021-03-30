@@ -6,7 +6,7 @@ using Nexus.Link.Libraries.Web.RestClientHelper;
 
 #pragma warning disable 1591
 
-namespace Service.RestClients
+namespace DataAccess.RestClients
 {
     public class IntegrationApiRestClient : RestClient
     {

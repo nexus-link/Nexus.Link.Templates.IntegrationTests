@@ -1,11 +1,11 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
+using Mocks.Helpers;
 using Nexus.Link.Libraries.Web.RestClientHelper;
-using Service.Tests.ContractTests.Capability1.Models;
 
 #pragma warning disable 1591
 
-namespace Service.RestClients
+namespace DataAccess.RestClients
 {
     public class BusinessApiRestClient : RestClient
     {

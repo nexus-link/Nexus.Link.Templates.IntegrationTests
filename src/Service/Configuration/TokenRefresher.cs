@@ -4,13 +4,13 @@ using System.Net.Http.Headers;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using DataAccess.RestClients;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Rest;
 using Nexus.Link.Libraries.Core.Assert;
 using Nexus.Link.Libraries.Core.Platform.Authentication;
 using Nexus.Link.Libraries.Web.Platform.Authentication;
 using Nexus.Link.Libraries.Web.RestClientHelper;
-using Service.RestClients;
 
 #pragma warning disable 1591
 

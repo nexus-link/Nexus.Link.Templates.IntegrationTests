@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using DataAccess.RestClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +14,6 @@ using Nexus.Link.Libraries.Web.AspNet.Annotations;
 using Nexus.Link.Libraries.Web.RestClientHelper;
 using Service.Configuration;
 using Service.Logic;
-using Service.RestClients;
 using SharedKernel;
 #pragma warning disable 1591
 

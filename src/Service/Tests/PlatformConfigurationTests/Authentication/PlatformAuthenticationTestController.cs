@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DataAccess.RestClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +12,6 @@ using Service.Configuration;
 using Service.Controllers;
 using Service.Logic;
 using Service.Models;
-using Service.RestClients;
 using SharedKernel;
 
 #pragma warning disable 1591
