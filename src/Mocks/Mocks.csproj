@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.9" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.8" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Nexus.Link.Authentication.AspNet.Sdk" Version="2.2.26" />
     <PackageReference Include="Nexus.Link.Authentication.Sdk" Version="2.2.22" />
     <PackageReference Include="Nexus.Link.BusinessEvents.Sdk" Version="2.0.24" />
